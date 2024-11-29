@@ -3,6 +3,8 @@
 import numpy as np
 
 
+# an attempt to redo the dsr algorithm faster
+#
 def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     """
     Function performing the diffusion step, the infection step, and the
@@ -19,21 +21,14 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     """
 
     N = np.size(x)
+    # new update rule:
+    agent_diffuses = np.random.rand(N) < d
+    x_diffuses = np.random.rand(N) < 0.5
+    y_diffuses = np.invert(x_diffuses)
+    move_direction = np.sign(np.random.rand(N) - 0.5)
 
-    # Diffusion step.
-    diffuse = np.random.rand(N)
-    move = np.random.randint(4, size=N)
-    for i in range(N):
-        if diffuse[i] < d:
-            if move[i] == 0:
-                x[i] = x[i] - 1
-            elif move[i] == 1:
-                y[i] = y[i] - 1
-            elif move[i] == 2:
-                x[i] = x[i] + 1
-            else:
-                # move[i] == 3
-                y[i] = y[i] + 1
+    x = np.where(np.logical_and(agent_diffuses, x_diffuses), x + move_direction, x)
+    y = np.where(np.logical_and(agent_diffuses, y_diffuses), y + move_direction, y)
 
     # Enforce pbc.
     x = x % L
