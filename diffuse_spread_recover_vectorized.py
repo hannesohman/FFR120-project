@@ -21,7 +21,7 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     """
 
     N = np.size(x)
-    # new update rule:
+    # vectorized update rule:
     agent_diffuses = np.random.rand(N) < d
     x_diffuses = np.random.rand(N) < 0.5
     y_diffuses = np.invert(x_diffuses)
@@ -35,11 +35,17 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     y = y % L
 
     # Recovered to suseptilbe.
-    recovered = np.where(status == 2)[0]
-    for r in recovered:
-        # Check whether the recoverec becomes suseptible again.
-        if np.random.rand() < alpha:
-            status[r] = 0
+    # vectorized version:
+    # if aget is recovered and becomes suseptible again,
+    # set them to 0 (=uninfected)
+    suseptible_again = np.random.rand(N) < alpha
+    status = np.where(np.logical_and(status == 2, suseptible_again), 0, status)
+
+    # recovered = np.where(status == 2)[0]
+    # for r in recovered:
+    #     # Check whether the recovered becomes suseptible again.
+    #     if np.random.rand() < alpha:
+    #         status[r] = 0
 
     # Spreading disease step.
     infected = np.where(status == 1)[0]
