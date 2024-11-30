@@ -4,96 +4,162 @@ from tkinter import *
 import random as r
 
 
-N_indiv = 1000
+N_indiv = 1000  #* Antalet individer som ska simuleras
 
-window_height = 600
-window_width = 900
+
+grid_height = 60
+grid_width = 90
+
+ratio = 10  #* Förhållandet mellan upplösningen på fönstret och upplösningen på rutnätet
+
 
 
 
 tk = Tk()
-tk.geometry(f'{window_width}x{window_height}')
+tk.geometry(f'{grid_width*ratio}x{grid_height*ratio}')
 tk.configure(background='#000000')
 
-canvas = Canvas(tk, background='#ECECEC')  # Generate animation window.
+canvas = Canvas(tk, background='#ECECEC')
 tk.attributes('-topmost', 0)
-canvas.place(x=0, y=0, height=window_height, width=window_width)
+canvas.place(x=0, y=0, height=grid_height*ratio, width=grid_width*ratio)
 
-
-locations = {
-    "kårhuset": (400,10,850,90),
-    "fysikhuset": (650,210,880,330),
-    "kemihuset": (780,350,890,590),
-    "biblioteket": (520,470,750,570),
+# 
+location_limits = {
+    "kårhuset": (40,1,85,9),
+    "fysikhuset": (65,21,88,33),
+    "kemihuset": (78,35,89,59),
+    "biblioteket": (52,47,75,57),
 }
 
-for key, val in locations.items():
-    canvas.create_rectangle(*val)
+
+# Följande ritar upp rektanglar för områdena.
+for key, val in location_limits.items():
+    coords = [c*ratio for c in val]
+    canvas.create_rectangle(coords)
 
 
-def random_location_coords(location):
-    x0, y0, x1, y1 = locations[location]
 
-    x = np.random.rand() * (x1 - x0) + x0
-    y = np.random.rand() * (y1 - y0) + y0
+
+
+def get_min_max(location):
+    # Tar emot individernas tilldelade områden
+    # Hämtar en individs gränser baserat på vilket rum den befinner sig i.
+    # Returnerar fyrra kolumnvektorer med gränserna på individernas tilldelade område.
+
+    min_x = np.zeros((N_indiv,1))
+    min_y = np.zeros((N_indiv,1))
+    max_x = np.zeros((N_indiv,1))
+    max_y = np.zeros((N_indiv,1))
+
+    for idx, loc in enumerate(location):
+        x0, y0, x1, y1 = location_limits[loc[0]]
+        min_x[idx] = x0 + 1
+        min_y[idx] = y0 + 1
+        max_x[idx] = x1 - 1
+        max_y[idx] = y1 - 1
+
+    return min_x, min_y, max_x, max_y
+
+
+def random_location_coords(locations):
+    # Tar emot individers tilldelade område
+    # Anger en random slumpmässig startposition för en individ i det område individen tillhör
+    # Returnerar sumpmässiga koordinater inom det tilldelade området
+
+    x = np.zeros((N_indiv,1))
+    y = np.zeros((N_indiv,1))
+
+    for idx, loc in enumerate(locations):
+        x0, y0, x1, y1 = location_limits[loc[0]]
+
+        x[idx] = int((np.random.rand() * (x1 - x0) + x0)) 
+        y[idx] = int((np.random.rand() * (y1 - y0) + y0))
     return x, y
 
+def move(x, y):
+    # Tar emot individers nuvarande koordinater.
+    # Flyttar individen i x- och y-led med -1, 0, eller +1 steg
+    # Returnerar de nya koordinaterna
 
-# TIME:     0     ->       40     ->   60      ->     100
-# Schedule:   Föreläsning       Lunch      Föreläsning
+    dx = np.random.choice([-1, 0, 1], (x.shape[0], 1))
+    dy = np.random.choice([-1, 0, 1], (y.shape[0], 1))
 
-# Kemi: []
+    return x + dx, y + dy
 
 
-class Individual:
-    def __init__(self, location) -> None:
-        self.suseptibility = np.random.rand()
-        self.status = 0
-        self.location = location
-        x,y = random_location_coords(location)
-        self.x = x
-        self.y = y
+def walls(nx, ny, min_x, min_y, max_x, max_y):
+    # Tar emot individernas nya koordinater och gränserna på deras område
+    # Applicerar gränserna på koordinaterna ifall de försöker flytta sig utanför området
+    # Returnerar de nya koordinaterna
 
-    def set_coords(self, x, y):
-        self.x = x
-        self.y = y
+    nx[nx < min_x] = nx[nx < min_x] + 1
+    nx[nx > max_x] = nx[nx > max_x] - 1
 
-    def draw(self):
-        self.point = canvas.create_oval(
-            self.x - 2,
-            self.y - 2,
-            self.x + 2,
-            self.y + 2,
+    ny[ny < min_y] = ny[ny < min_y] + 1
+    ny[ny > max_y] = ny[ny > max_y] - 1
+
+    return nx, ny
+
+
+
+
+
+
+
+
+location0 = np.random.choice(list(location_limits.keys()),(N_indiv,1))
+
+min_x, min_y, max_x, max_y = get_min_max(location0)
+
+x0, y0 = random_location_coords(location0)
+
+individuals = []
+
+for coord_idx in range(x0.shape[0]):
+
+    individuals.append(
+        canvas.create_oval(
+            x0[coord_idx][0]*ratio - 2,
+            y0[coord_idx][0]*ratio - 2,
+            x0[coord_idx][0]*ratio + 2,
+            y0[coord_idx][0]*ratio + 2,
             outline='', fill="black"
         )
-
-
-indiv = []
-
-for ind in range(N_indiv):
-    loc = r.choice(list(locations.keys()))
-    individ = Individual(loc)
-    indiv.append(individ)
-    individ.draw()
+    )
 
 
 
-    # x = np.random.rand()
-    # y = np.random.rand()
+location = location0
+x = x0
+y = y0
 
-    # individuals.append(
-    #     canvas.create_oval(
-    #         x * (kårhuset[2] - kårhuset[0]) - 2 + kårhuset[0],
-    #         y * (kårhuset[3] - kårhuset[1]) - 2 + kårhuset[1],
-    #         x * (kårhuset[2] - kårhuset[0]) + 2 + kårhuset[0],
-    #         y * (kårhuset[3] - kårhuset[1]) + 2 + kårhuset[1],
-    #         outline='', fill="black"
-    #     )
-    # )
 
+running = True
+
+while running:
+    nx, ny = move(x, y)
+
+    for i, indiv in enumerate(individuals):
+        canvas.coords(
+            indiv,
+            nx[i][0]*ratio - 2,
+            ny[i][0]*ratio - 2,
+            nx[i][0]*ratio + 2,
+            ny[i][0]*ratio + 2
+        )
+
+    nx, ny = walls(nx, ny, min_x, min_y, max_x, max_y)
+
+    x = nx
+    y = ny
+
+    
+
+    tk.update_idletasks()
+    tk.update()
+    time.sleep(0.1)
 
 
 tk.update_idletasks()
 tk.update()
-tk.mainloop()  # Release animation handle (close window to finish).
-
+tk.mainloop()
