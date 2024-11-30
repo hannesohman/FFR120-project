@@ -21,14 +21,15 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     """
 
     N = np.size(x)
-    # vectorized update rule:
+
+    # vectorized diffusion step.
     agent_diffuses = np.random.rand(N) < d
     x_diffuses = np.random.rand(N) < 0.5
     y_diffuses = np.invert(x_diffuses)
     move_direction = np.sign(np.random.rand(N) - 0.5)
 
-    x = np.where(np.logical_and(agent_diffuses, x_diffuses), x + move_direction, x)
-    y = np.where(np.logical_and(agent_diffuses, y_diffuses), y + move_direction, y)
+    x = np.where(agent_diffuses & x_diffuses, x + move_direction, x)
+    y = np.where(agent_diffuses & y_diffuses, y + move_direction, y)
 
     # Enforce pbc.
     # TODO change to reflective boundaries.
@@ -37,18 +38,16 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
 
     # Recovered to suseptilbe.
     # vectorized version:
+    recover_draw = np.random.random(N)
+    status = np.where(status == 2 & (recover_draw < alpha), 0, status)
+
     # if aget is recovered and becomes suseptible again,
     # set them to 0 (=uninfected)
-    suseptible_again = np.random.rand(N) < alpha
-    status = np.where(np.logical_and(status == 2, suseptible_again), 0, status)
-
-    # vectorized version
-    x_infected = x[status == 1]
-    y_infected = y[status == 1]
 
     infected = np.where(status == 1)[0]
     for i in infected:
         # Check whether other particles share the same position.
+
         same_x = np.where(x == x[i])
         same_y = np.where(y == y[i])
         same_cell = np.intersect1d(same_x, same_y)
@@ -58,9 +57,7 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
                     status[j] = 1
 
     # Recover step.
-    for i in infected:
-        # Check whether the infected recovers.
-        if np.random.rand() < gamma:
-            status[i] = 2
+    recover_draw = np.random.rand(N)
+    status = np.where((recover_draw < gamma) & (status == 1), 2, status)
 
     return x, y, status
