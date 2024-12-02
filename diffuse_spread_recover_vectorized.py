@@ -36,13 +36,10 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     x = x % L
     y = y % L
 
-    # Recovered to suseptilbe.
+    # Recovered to suseptible with probability alpha.
     # vectorized version:
     recover_draw = np.random.random(N)
-    status = np.where(status == 2 & (recover_draw < alpha), 0, status)
-
-    # if aget is recovered and becomes suseptible again,
-    # set them to 0 (=uninfected)
+    status = np.where((status == 2) & (recover_draw < alpha), 0, status)
 
     infected = np.where(status == 1)[0]
     for i in infected:
