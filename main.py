@@ -6,24 +6,27 @@ from diffuse_spread_recover_vectorized import *
 import matplotlib.pyplot as plt
 
 
-N_indiv = 2000  # * Antalet individer som ska simuleras
+N_indiv = 1000  # * Antalet individer som ska simuleras
 
-I0 = 2
+I0 = 20
 
 beta = 0.05  # Spread porbability
-gamma = 0.00001  # Revocery probability
+gamma = 0.0001  # Revocery probability
 theta = 0.00001  # Probability of dying
-alpha = 0.005  # Probability of recovered becoming susceptible again
+alpha = 0.001  # Probability of recovered becoming susceptible again
 
 d = 0.06  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
 
 sus_mean = 1
 sus_std = 0.2
 
-simulation_days = 300
+simulation_days = 70
 day_steps = 10
 
-vaccine_factor = 0.20
+vaccine_mode = "risk group"
+vaccine_factor = 1
+fraction_weakest = 0
+
 
 
 g_h = 157  # Grid height   47, 94, 141,
@@ -213,10 +216,11 @@ for day in range(simulation_days):
             min_x, min_y, max_x, max_y = get_min_max(location)
 
         if I[-1] > 0.3 * N_indiv and not vaccination:
-            print(f"STEP: {step} | VACCINE!!!")
-            time.sleep(3)
-            susceptibility = vaccinate(susceptibility, vaccine_factor, N_indiv)
+            print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
+            # "all even" , "all random" , "risk group"
+            susceptibility = vaccinate(susceptibility, N_indiv, mode=vaccine_mode, vaccine_factor=vaccine_factor, fraction_weakest=fraction_weakest)
             vaccination = True
+            time.sleep(3)
 
         nx, ny = move(x, y, d)  # Flytta inddividerna
 

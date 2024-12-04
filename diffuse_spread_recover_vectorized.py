@@ -89,9 +89,26 @@ def reset(status, alpha, N_indiv):
     status = np.where((reset_draw < alpha) & (status == 2), 0, status)
     return status
 
-def vaccinate(susceptibility, vaccine_factor, N_indiv):
-    to_vaccinate = np.random.choice([0, 1], (N_indiv, 1))
-    susceptibility *= vaccine_factor
+def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_weakest=0.5):
+
+    if mode == "all even":
+        susceptibility *= vaccine_factor
+
+    elif mode == "all random":
+        susceptibility *= np.random.rand(N_indiv,1)
+
+    elif mode == "risk group":
+        sorted_suscep = np.sort(susceptibility, axis=0)
+        # print(sorted_suscep)
+        index_cut = int(len(sorted_suscep) * fraction_weakest)
+        # print(index_cut)
+        weak_limit = sorted_suscep[index_cut]
+        # print(weak_limit)
+
+        print(susceptibility[0])
+        susceptibility[susceptibility < weak_limit] *= vaccine_factor
+        print(susceptibility[0])
+    
 
     return susceptibility
 
