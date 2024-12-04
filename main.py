@@ -152,7 +152,6 @@ status = np.zeros((N_indiv, 1))
 status[:I0] = 1
 
 susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
-susceptibility[susceptibility > 1] = 1
 
 
 individuals_dots = []
