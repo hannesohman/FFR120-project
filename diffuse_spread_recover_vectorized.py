@@ -60,8 +60,6 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     return x, y, status
 
 
-
-
 def spread(x, y, status, beta, susceptibility):
     infected = np.where(status == 1)[0]
 
@@ -79,23 +77,26 @@ def spread(x, y, status, beta, susceptibility):
 
 
 def recover_die(status, gamma, theta, N_indiv):
-    recover_draw = np.random.rand(N_indiv,1)
+    recover_draw = np.random.rand(N_indiv, 1)
     status = np.where((recover_draw < theta) & (status == 1), 3, status)
     status = np.where((recover_draw < gamma) & (status == 1), 2, status)
     return status
 
+
 def reset(status, alpha, N_indiv):
-    reset_draw = np.random.rand(N_indiv,1)
+    reset_draw = np.random.rand(N_indiv, 1)
     status = np.where((reset_draw < alpha) & (status == 2), 0, status)
     return status
 
-def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_weakest=0.5):
 
+def vaccinate(
+    susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_weakest=0.5
+):
     if mode == "all even":
         susceptibility *= vaccine_factor
 
     elif mode == "all random":
-        susceptibility *= np.random.rand(N_indiv,1)
+        susceptibility *= np.random.rand(N_indiv, 1)
 
     elif mode == "risk group":
         sorted_suscep = np.sort(susceptibility, axis=0)
@@ -105,10 +106,7 @@ def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, frac
         weak_limit = sorted_suscep[index_cut]
         # print(weak_limit)
 
-        print(susceptibility[0])
         susceptibility[susceptibility < weak_limit] *= vaccine_factor
-        print(susceptibility[0])
-    
 
     return susceptibility
 
@@ -116,8 +114,8 @@ def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, frac
 def switch_location(location, schedule, p_schedule, location_info, N_indiv):
     sched_index = list(location_info.keys()).index(schedule)
 
-    p_weights = [(1-p_schedule) / (len(location_info) - 1) for loc in location_info]
+    p_weights = [(1 - p_schedule) / (len(location_info) - 1) for loc in location_info]
     p_weights[sched_index] = p_schedule
 
-    location = np.random.choice(list(location_info.keys()),(N_indiv,1), p=p_weights)
+    location = np.random.choice(list(location_info.keys()), (N_indiv, 1), p=p_weights)
     return location

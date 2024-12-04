@@ -31,6 +31,8 @@ sus_std = 0.2
 
 vaccine_mode = "risk group"
 vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
+vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
+
 fraction_weakest = 0.5
 
 
@@ -223,7 +225,13 @@ for day in range(simulation_days):
         if I[-1] > 0.3 * N_indiv and not vaccination:
             print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
             # "all even" , "all random" , "risk group"
-            susceptibility = vaccinate(susceptibility, N_indiv, mode=vaccine_mode, vaccine_factor=vaccine_factor, fraction_weakest=fraction_weakest)
+            susceptibility = vaccinate(
+                susceptibility,
+                N_indiv,
+                mode=vaccine_mode,
+                vaccine_factor=vaccine_factor,
+                fraction_weakest=fraction_weakest,
+            )
             vaccination = True
             vaccination_time = global_steps
 
