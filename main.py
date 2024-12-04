@@ -20,7 +20,7 @@ I0 = 2  # Start value of I
 beta = (1 / 1.8) * dt  # Infection rate
 gamma = (1 / 14) * dt  # Revocery probability
 theta = 0.001 * dt  # Probability of dying
-alpha = 0.02 * dt  # Probability of recovered becoming susceptible again
+alpha = (1 / 14) * dt  # Probability of recovered becoming susceptible again
 
 d = (
     0.6 * dt
