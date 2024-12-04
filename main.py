@@ -31,7 +31,6 @@ sus_std = 0.2
 
 
 vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
-vaccine_factor = 1
 
 
 g_h = 157  # Grid height   47, 94, 141,
@@ -224,6 +223,7 @@ for day in range(simulation_days):
             time.sleep(3)
             susceptibility = vaccinate(susceptibility, vaccine_factor, N_indiv)
             vaccination = True
+            vaccination_time = global_steps
 
         nx, ny = move(x, y, d)  # Flytta inddividerna
 
@@ -292,6 +292,7 @@ plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
 plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
 plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
 plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
+plt.axvline(vaccination_time, color="black", linestyle="dashed", label="Vaccination")
 plt.legend()
 plt.xlabel("time")
 plt.ylabel("S, I, R, D")
