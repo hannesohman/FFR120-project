@@ -6,16 +6,16 @@ from diffuse_spread_recover_vectorized import *
 import matplotlib.pyplot as plt
 
 
-N_indiv = 2000  #* Antalet individer som ska simuleras
+N_indiv = 2000  # * Antalet individer som ska simuleras
 
 I0 = 2
 
-beta = 0.05         # Spread porbability
-gamma = 0.00001       # Revocery probability
-theta = 0.00001     # Probability of dying
-alpha = 0.005       # Probability of recovered becoming susceptible again
+beta = 0.05  # Spread porbability
+gamma = 0.00001  # Revocery probability
+theta = 0.00001  # Probability of dying
+alpha = 0.005  # Probability of recovered becoming susceptible again
 
-d = 0.06     # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
+d = 0.06  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
 
 sus_mean = 1
 sus_std = 0.2
@@ -102,13 +102,14 @@ def random_location_coords(location):
         y[idx] = int((np.random.rand() * (y1 - y0) + y0))
     return x, y
 
+
 def move(x, y, d):
     # Tar emot individers nuvarande koordinater.
     # Flyttar individen i x- och y-led med -1, 0, eller +1 steg
     # Returnerar de nya koordinaterna
 
-    dx = np.random.choice([-1, 0, 1], (x.shape[0], 1), p=[d/2, 1 - d, d/2])
-    dy = np.random.choice([-1, 0, 1], (y.shape[0], 1), p=[d/2, 1 - d, d/2])
+    dx = np.random.choice([-1, 0, 1], (x.shape[0], 1), p=[d / 2, 1 - d, d / 2])
+    dy = np.random.choice([-1, 0, 1], (y.shape[0], 1), p=[d / 2, 1 - d, d / 2])
 
     dx[status == 3] = 0
     dy[status == 3] = 0
@@ -136,7 +137,7 @@ min_x, min_y, max_x, max_y = get_min_max(location0)
 
 x0, y0 = random_location_coords(location0)
 
-status = np.zeros((N_indiv,1))
+status = np.zeros((N_indiv, 1))
 status[:I0] = 1
 
 susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
@@ -183,6 +184,9 @@ global_steps = 0
 
 vaccination = False
 
+silent_mode = True
+print_progress = True
+
 for day in range(simulation_days):
     # step = 0
 
@@ -192,21 +196,21 @@ for day in range(simulation_days):
         R.append(np.size(np.where(status == 2)[0]))
         D.append(np.size(np.where(status == 3)[0]))
 
-
-        if step == day_steps * 2/5:
-            schedule = "kårhuset"   # Ska representer lunchtid
+        if step == day_steps * 2 / 5:
+            schedule = "kårhuset"  # Ska representer lunchtid
             d = 0.70
-            location = switch_location(location, schedule, p_schedule, location_info, N_indiv)
+            location = switch_location(
+                location, schedule, p_schedule, location_info, N_indiv
+            )
             x, y = random_location_coords(location)
             min_x, min_y, max_x, max_y = get_min_max(location)
 
-        if step == day_steps * 3/5:
-            schedule = "lecture"    # Ska representera föreläsningar
+        if step == day_steps * 3 / 5:
+            schedule = "lecture"  # Ska representera föreläsningar
             d = 0.04
-            location = np.random.choice(list(location_info.keys()),(N_indiv,1))
+            location = np.random.choice(list(location_info.keys()), (N_indiv, 1))
             x, y = random_location_coords(location)
             min_x, min_y, max_x, max_y = get_min_max(location)
-
 
         if I[-1] > 0.3 * N_indiv and not vaccination:
             print(f"STEP: {step} | VACCINE!!!")
@@ -214,9 +218,7 @@ for day in range(simulation_days):
             susceptibility = vaccinate(susceptibility, vaccine_factor, N_indiv)
             vaccination = True
 
-        
-
-        nx, ny = move(x, y, d)     # Flytta inddividerna
+        nx, ny = move(x, y, d)  # Flytta inddividerna
 
         nx, ny = walls(nx, ny, min_x, min_y, max_x, max_y)
 
@@ -224,11 +226,9 @@ for day in range(simulation_days):
         status = recover_die(status, gamma, theta, N_indiv)
         status = reset(status, alpha, N_indiv)
 
-
-
-
-
-        for id, indiv in enumerate(individuals_dots): # Rita deras nya position på grafiken
+        for id, indiv in enumerate(
+            individuals_dots
+        ):  # Rita deras nya position på grafiken
             if status[id] == 0:
                 agent_color = "#1f77b4"
             elif status[id] == 1:
@@ -250,24 +250,29 @@ for day in range(simulation_days):
         x = nx
         y = ny
 
-        tk.update_idletasks()
-        tk.update()
-        time.sleep(0.0000001)
+        if not silent_mode:
+            tk.update_idletasks()
+            tk.update()
+            time.sleep(0.0000001)
+            print(
+                f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |"
+            )
+        if print_progress:
+            total_steps = simulation_days * day_steps
+            print_interval = 200
 
-        print(f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |")
-
-
+            if global_steps % int(total_steps / print_interval) == 0:
+                percent_done = round(100 * global_steps / total_steps, 2)
+                print(f"simulating... {percent_done}", end="\r")
         global_steps += 1
 
-        if I[-1] == 0: # or step == 600:
+        if I[-1] == 0:  # or step == 600:
             running = False
             break
-    if I[-1] == 0: # or step == 600:
+    if I[-1] == 0:  # or step == 600:
         running = False
         break
         # step += 1
-
-        
 
 
 tk.update_idletasks()
