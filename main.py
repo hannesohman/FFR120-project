@@ -6,27 +6,32 @@ from diffuse_spread_recover_vectorized import *
 import matplotlib.pyplot as plt
 
 
-N_indiv = 1000  # * Antalet individer som ska simuleras
+silent_mode = True
+N_indiv = 2000  # * Antalet individer som ska simuleras
 
-I0 = 20
+simulation_days = 300
+dt = 0.1  # time step (measured in days)
+day_steps = int(1 / dt)  # steps per day (used in for-loop)
 
-beta = 0.05  # Spread porbability
-gamma = 0.0001  # Revocery probability
-theta = 0.00001  # Probability of dying
-alpha = 0.001  # Probability of recovered becoming susceptible again
+I0 = 2  # Start value of I
 
-d = 0.06  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
+# parameters of SIR model
+# values correspond to per day.
+beta = (1 / 1.8) * dt  # Infection rate
+gamma = (1 / 14) * dt  # Revocery probability
+theta = 0.001 * dt  # Probability of dying
+alpha = 0.02 * dt  # Probability of recovered becoming susceptible again
+
+d = (
+    0.6 * dt
+)  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
 
 sus_mean = 1
 sus_std = 0.2
 
-simulation_days = 70
-day_steps = 10
-
 vaccine_mode = "risk group"
-vaccine_factor = 1
-fraction_weakest = 0
-
+vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
+fraction_weakest = 0.5
 
 
 g_h = 157  # Grid height   47, 94, 141,
@@ -34,15 +39,16 @@ g_w = 309  # Grid width    96, 192, 288
 # grid förhållandet är 96 : 47 (309 : 157)
 
 ratio = 4  # * Förhållandet mellan upplösningen på fönstret och upplösningen på rutnätet
+vaccination_time = None
 
+if not silent_mode:
+    tk = Tk()
+    tk.geometry(f"{g_w*ratio}x{g_h*ratio}")
+    tk.configure(background="#000000")
 
-tk = Tk()
-tk.geometry(f"{g_w*ratio}x{g_h*ratio}")
-tk.configure(background="#000000")
-
-canvas = Canvas(tk, background="#ECECEC")
-tk.attributes("-topmost", 0)
-canvas.place(x=0, y=0, height=g_h * ratio, width=g_w * ratio)
+    canvas = Canvas(tk, background="#ECECEC")
+    tk.attributes("-topmost", 0)
+    canvas.place(x=0, y=0, height=g_h * ratio, width=g_w * ratio)
 
 # positioner och gränser för platser på campus
 location_info = {
@@ -61,12 +67,12 @@ location_info = {
     "SB-huset": (0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h),
 }
 
-
-# Följande ritar upp rektanglar för områdena.
-for key, val in location_info.items():
-    coords = [c * ratio for c in val]
-    coords = [np.round(val) for val in coords]
-    canvas.create_rectangle(coords)
+if not silent_mode:
+    # Följande ritar upp rektanglar för områdena.
+    for key, val in location_info.items():
+        coords = [c * ratio for c in val]
+        coords = [np.round(val) for val in coords]
+        canvas.create_rectangle(coords)
 
 
 def get_min_max(location):
@@ -148,25 +154,25 @@ susceptibility[susceptibility > 1] = 1
 
 
 individuals_dots = []
+if not silent_mode:
+    for id in range(N_indiv):
+        if status[id] == 0:
+            agent_color = "#1f77b4"
+        elif status[id] == 1:
+            agent_color = "#d62728"
+        else:
+            agent_color = "#2ca02c"
 
-for id in range(N_indiv):
-    if status[id] == 0:
-        agent_color = "#1f77b4"
-    elif status[id] == 1:
-        agent_color = "#d62728"
-    else:
-        agent_color = "#2ca02c"
-
-    individuals_dots.append(
-        canvas.create_oval(
-            x0[id][0] * ratio - 2,
-            y0[id][0] * ratio - 2,
-            x0[id][0] * ratio + 2,
-            y0[id][0] * ratio + 2,
-            outline="",
-            fill=agent_color,
+        individuals_dots.append(
+            canvas.create_oval(
+                x0[id][0] * ratio - 2,
+                y0[id][0] * ratio - 2,
+                x0[id][0] * ratio + 2,
+                y0[id][0] * ratio + 2,
+                outline="",
+                fill=agent_color,
+            )
         )
-    )
 
 
 location = location0
@@ -187,7 +193,6 @@ global_steps = 0
 
 vaccination = False
 
-silent_mode = True
 print_progress = True
 
 for day in range(simulation_days):
@@ -201,7 +206,7 @@ for day in range(simulation_days):
 
         if step == day_steps * 2 / 5:
             schedule = "kårhuset"  # Ska representer lunchtid
-            d = 0.70
+            d = 0.70 * dt
             location = switch_location(
                 location, schedule, p_schedule, location_info, N_indiv
             )
@@ -210,7 +215,7 @@ for day in range(simulation_days):
 
         if step == day_steps * 3 / 5:
             schedule = "lecture"  # Ska representera föreläsningar
-            d = 0.04
+            d = 0.4 * dt
             location = np.random.choice(list(location_info.keys()), (N_indiv, 1))
             x, y = random_location_coords(location)
             min_x, min_y, max_x, max_y = get_min_max(location)
@@ -220,7 +225,7 @@ for day in range(simulation_days):
             # "all even" , "all random" , "risk group"
             susceptibility = vaccinate(susceptibility, N_indiv, mode=vaccine_mode, vaccine_factor=vaccine_factor, fraction_weakest=fraction_weakest)
             vaccination = True
-            time.sleep(3)
+            vaccination_time = global_steps
 
         nx, ny = move(x, y, d)  # Flytta inddividerna
 
@@ -258,9 +263,9 @@ for day in range(simulation_days):
             tk.update_idletasks()
             tk.update()
             time.sleep(0.0000001)
-            print(
-                f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |"
-            )
+            # print(
+            #    f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |"
+            # )
         if print_progress:
             total_steps = simulation_days * day_steps
             print_interval = 200
@@ -284,11 +289,17 @@ if not silent_mode:
     tk.mainloop()
 
 
-plt.plot(range(global_steps), S, c=[0.2, 0.4, 0.7])
-plt.plot(range(global_steps), I, c=[0.7, 0.3, 0.2])
-plt.plot(range(global_steps), R, c=[0.3, 0.7, 0.3])
-plt.plot(range(global_steps), D, c=[0.6, 0.6, 0.6])
-# plt.legend()
+days = np.linspace(0, simulation_days, num=global_steps)
+plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
+plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
+plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
+plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
+
+if vaccination_time is not None:
+    vaccine_day = vaccination_time * dt
+    plt.axvline(vaccine_day, color="black", linestyle="dashed", label="Vaccination")
+
+plt.legend()
 plt.xlabel("time")
 plt.ylabel("S, I, R, D")
 
