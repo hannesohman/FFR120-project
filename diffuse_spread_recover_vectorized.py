@@ -73,21 +73,28 @@ def spread(x, y, status, beta, susceptibility):
         same_cell = np.intersect1d(same_x, same_y)
         for j in same_cell:
             if status[j] == 0:
-                if np.random.rand()*susceptibility[j] < beta:
+                if np.random.rand() < beta * susceptibility[j]:
                     status[j] = 1
     return status
 
 
 def recover_die(status, gamma, theta, N_indiv):
     recover_draw = np.random.rand(N_indiv,1)
-    status = np.where((recover_draw < gamma) & (status == 1), 2, status)
     status = np.where((recover_draw < theta) & (status == 1), 3, status)
+    status = np.where((recover_draw < gamma) & (status == 1), 2, status)
     return status
 
 def reset(status, alpha, N_indiv):
     reset_draw = np.random.rand(N_indiv,1)
     status = np.where((reset_draw < alpha) & (status == 2), 0, status)
     return status
+
+def vaccinate(susceptibility, vaccine_factor, N_indiv):
+    to_vaccinate = np.random.choice([0, 1], (N_indiv, 1))
+    susceptibility *= vaccine_factor
+
+    return susceptibility
+
 
 def switch_location(location, schedule, p_schedule, location_info, N_indiv):
     sched_index = list(location_info.keys()).index(schedule)

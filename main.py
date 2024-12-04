@@ -8,15 +8,22 @@ import matplotlib.pyplot as plt
 
 N_indiv = 2000  #* Antalet individer som ska simuleras
 
-I0 = 20
+I0 = 2
 
-beta = 0.05     # Spread porbability
-gamma = 0.007       # Revocery probability
-theta = 0.0001   # Probability of dying
-alpha = 0.01 # Probability of recovered becoming susceptible again
+beta = 0.05         # Spread porbability
+gamma = 0.00001       # Revocery probability
+theta = 0.00001     # Probability of dying
+alpha = 0.005       # Probability of recovered becoming susceptible again
 
 d = 0.06     # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
 
+sus_mean = 1
+sus_std = 0.2
+
+simulation_days = 300
+day_steps = 10
+
+vaccine_factor = 0.20
 
 
 g_h = 157  # Grid height   47, 94, 141,
@@ -34,7 +41,7 @@ canvas = Canvas(tk, background="#ECECEC")
 tk.attributes("-topmost", 0)
 canvas.place(x=0, y=0, height=g_h * ratio, width=g_w * ratio)
 
-#
+# positioner och gränser för platser på campus
 location_info = {
     "kårhuset": (0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h),
     "vasa": (0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h),
@@ -132,9 +139,8 @@ x0, y0 = random_location_coords(location0)
 status = np.zeros((N_indiv,1))
 status[:I0] = 1
 
-susceptibility = np.random.normal(0.80, 0.2, (N_indiv, 1))
+susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
 susceptibility[susceptibility > 1] = 1
-print(susceptibility)
 
 
 individuals_dots = []
@@ -163,7 +169,6 @@ location = location0
 x = x0
 y = y0
 
-schedule = "lecture"
 p_schedule = 0.80
 
 
@@ -174,10 +179,9 @@ D = []
 
 running = True
 
-simulation_days = 20
-day_steps = 600
-
 global_steps = 0
+
+vaccination = False
 
 for day in range(simulation_days):
     # step = 0
@@ -202,6 +206,13 @@ for day in range(simulation_days):
             location = np.random.choice(list(location_info.keys()),(N_indiv,1))
             x, y = random_location_coords(location)
             min_x, min_y, max_x, max_y = get_min_max(location)
+
+
+        if I[-1] > 0.3 * N_indiv and not vaccination:
+            print(f"STEP: {step} | VACCINE!!!")
+            time.sleep(3)
+            susceptibility = vaccinate(susceptibility, vaccine_factor, N_indiv)
+            vaccination = True
 
         
 
@@ -264,11 +275,12 @@ tk.update()
 tk.mainloop()
 
 
-plt.plot(range(global_steps), S, c=[0.2, 0.2, 0.5])
-plt.plot(range(global_steps), I, c=[0.5, 0.3, 0.2])
-plt.plot(range(global_steps), R, c=[0.3, 0.5, 0.3])
+plt.plot(range(global_steps), S, c=[0.2, 0.4, 0.7])
+plt.plot(range(global_steps), I, c=[0.7, 0.3, 0.2])
+plt.plot(range(global_steps), R, c=[0.3, 0.7, 0.3])
+plt.plot(range(global_steps), D, c=[0.6, 0.6, 0.6])
 # plt.legend()
 plt.xlabel("time")
-plt.ylabel("S, I, R")
+plt.ylabel("S, I, R, D")
 
 plt.show()
