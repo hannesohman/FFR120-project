@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 import time
 
 
-from diffuse_spread_recover_vectorized import diffuse_spread_recover
+# from diffuse_spread_recover_vectorized import diffuse_spread_recover
 
-# from diffuse_spread_recover import diffuse_spread_recover
+from diffuse_spread_recover import diffuse_spread_recover
 
 
 N_part = 1000  # Total agent population.
@@ -31,9 +31,11 @@ status[0:I0] = 1
 
 N_skip = 1  # Visualize status every N_skip steps.
 ra = 0.5  # Radius of the circle representing the agents.
+max_steps = 10000
 
 starttime = time.time()
-for run in range(5):
+max_runs = 5
+for run in range(max_runs):
     running = True  # Flag to control the loop.
     step = 0
 
@@ -59,11 +61,12 @@ for run in range(5):
         I.append(np.size(np.where(status == 1)[0]))
         R.append(np.size(np.where(status == 2)[0]))
 
-        # if step % 100 == 0:
-        #     print(f"{I0} {alpha} || {run} | {step} | S: {S[-1]} I: {I[-1]} R: {R[-1]}")
+        if step % 100 == 0:
+            # print(f"{I0} {alpha} || {run} | {step} | S: {S[-1]} I: {I[-1]} R: {R[-1]}")
+            print(f"{round(100*step*(run+1)/(max_steps*max_runs),2)}%", end="\r")
 
         step += 1
-        if I[-1] == 0 or step >= 5000:
+        if I[-1] == 0 or step >= max_steps:
             running = False
 
     t = np.array(np.arange(len(S)))
@@ -79,5 +82,6 @@ for run in range(5):
     # plt.legend()
     plt.xlabel("time")
     plt.ylabel("S, I, R")
+print()
 print(f"finished in {round(time.time() - starttime,1)} s")
 plt.show()
