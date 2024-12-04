@@ -38,6 +38,7 @@ g_w = 309  # Grid width    96, 192, 288
 # grid förhållandet är 96 : 47 (309 : 157)
 
 ratio = 4  # * Förhållandet mellan upplösningen på fönstret och upplösningen på rutnätet
+vaccination_time = None
 
 if not silent_mode:
     tk = Tk()
@@ -292,7 +293,12 @@ plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
 plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
 plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
 plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
-plt.axvline(vaccination_time, color="black", linestyle="dashed", label="Vaccination")
+
+if vaccination_time is not None:
+    plt.axvline(
+        vaccination_time, color="black", linestyle="dashed", label="Vaccination"
+    )
+
 plt.legend()
 plt.xlabel("time")
 plt.ylabel("S, I, R, D")
