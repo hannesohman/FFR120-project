@@ -3,18 +3,19 @@ import time
 from tkinter import *
 import random as r
 from diffuse_spread_recover_vectorized import *
+import matplotlib.pyplot as plt
 
 
-N_indiv = 1000  #* Antalet individer som ska simuleras
+N_indiv = 2000  #* Antalet individer som ska simuleras
 
 I0 = 20
 
-d = 1
 beta = 0.05     # Spread porbability
-gamma = 0.001       # Revocery probability
+gamma = 0.007       # Revocery probability
 theta = 0.0001   # Probability of dying
+alpha = 0.01 # Probability of recovered becoming susceptible again
 
-
+d = 0.06     # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
 
 
 
@@ -97,13 +98,13 @@ def random_location_coords(location):
         y[idx] = int((np.random.rand() * (y1 - y0) + y0))
     return x, y
 
-def move(x, y):
+def move(x, y, d):
     # Tar emot individers nuvarande koordinater.
     # Flyttar individen i x- och y-led med -1, 0, eller +1 steg
     # Returnerar de nya koordinaterna
 
-    dx = np.random.choice([-1, 0, 1], (x.shape[0], 1))
-    dy = np.random.choice([-1, 0, 1], (y.shape[0], 1))
+    dx = np.random.choice([-1, 0, 1], (x.shape[0], 1), p=[d/2, 1 - d, d/2])
+    dy = np.random.choice([-1, 0, 1], (y.shape[0], 1), p=[d/2, 1 - d, d/2])
 
     dx[status == 3] = 0
     dy[status == 3] = 0
@@ -136,8 +137,11 @@ min_x, min_y, max_x, max_y = get_min_max(location0)
 x0, y0 = random_location_coords(location0)
 
 status = np.zeros((N_indiv,1))
-
 status[:I0] = 1
+
+susceptibility = np.random.normal(0.80, 0.2, (N_indiv, 1))
+susceptibility[susceptibility > 1] = 1
+print(susceptibility)
 
 
 individuals_dots = []
@@ -165,7 +169,9 @@ for id in range(N_indiv):
 location = location0
 x = x0
 y = y0
+
 schedule = "lecture"
+p_schedule = 0.80
 
 
 S = []
@@ -176,35 +182,43 @@ D = []
 running = True
 
 simulation_days = 20
+day_steps = 600
 
-day_steps = 10000
+global_steps = 0
+
 for day in range(simulation_days):
-    step = 0
-    while running:
+    # step = 0
+
+    for step in range(day_steps):
         S.append(np.size(np.where(status == 0)[0]))
         I.append(np.size(np.where(status == 1)[0]))
         R.append(np.size(np.where(status == 2)[0]))
         D.append(np.size(np.where(status == 3)[0]))
 
 
-        if step == 30: #day_steps *  2/5:
-            schedule = "lunch"
-            location = switch_location(location, schedule, location_info, N_indiv)
+        if step == day_steps * 2/5:
+            schedule = "kårhuset"   # Ska representer lunchtid
+            d = 0.70
+            location = switch_location(location, schedule, p_schedule, location_info, N_indiv)
             x, y = random_location_coords(location)
             min_x, min_y, max_x, max_y = get_min_max(location)
 
         if step == day_steps * 3/5:
-            schedule = "lecture"
-            location = switch_location(location, schedule, location_info, N_indiv)
+            schedule = "lecture"    # Ska representera föreläsningar
+            d = 0.04
+            location = np.random.choice(list(location_info.keys()),(N_indiv,1))
+            x, y = random_location_coords(location)
+            min_x, min_y, max_x, max_y = get_min_max(location)
 
         
 
-        nx, ny = move(x, y)     # Flytta inddividerna
+        nx, ny = move(x, y, d)     # Flytta inddividerna
 
         nx, ny = walls(nx, ny, min_x, min_y, max_x, max_y)
 
-        status = spread(nx, ny, status, beta)
+        status = spread(nx, ny, status, beta, susceptibility)
         status = recover_die(status, gamma, theta, N_indiv)
+        status = reset(status, alpha, N_indiv)
 
 
 
@@ -234,15 +248,34 @@ for day in range(simulation_days):
 
         tk.update_idletasks()
         tk.update()
-        time.sleep(0.001)
+        time.sleep(0.0000001)
 
-        print(f"Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |")
+        print(f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |")
 
-        if I[-1] == 0:
-                running = False
-        step += 1
+
+        global_steps += 1
+
+        if I[-1] == 0: # or step == 600:
+            running = False
+            break
+    if I[-1] == 0: # or step == 600:
+        running = False
+        break
+        # step += 1
+
+        
 
 
 tk.update_idletasks()
 tk.update()
 tk.mainloop()
+
+
+plt.plot(range(global_steps), S, c=[0.2, 0.2, 0.5])
+plt.plot(range(global_steps), I, c=[0.5, 0.3, 0.2])
+plt.plot(range(global_steps), R, c=[0.3, 0.5, 0.3])
+# plt.legend()
+plt.xlabel("time")
+plt.ylabel("S, I, R")
+
+plt.show()

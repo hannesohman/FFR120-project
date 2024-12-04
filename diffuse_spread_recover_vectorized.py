@@ -62,7 +62,7 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
 
 
 
-def spread(x,y,status,beta):
+def spread(x, y, status, beta, susceptibility):
     infected = np.where(status == 1)[0]
 
     for i in infected:
@@ -73,7 +73,7 @@ def spread(x,y,status,beta):
         same_cell = np.intersect1d(same_x, same_y)
         for j in same_cell:
             if status[j] == 0:
-                if np.random.rand() < beta:
+                if np.random.rand()*susceptibility[j] < beta:
                     status[j] = 1
     return status
 
@@ -84,6 +84,16 @@ def recover_die(status, gamma, theta, N_indiv):
     status = np.where((recover_draw < theta) & (status == 1), 3, status)
     return status
 
-def switch_location(location, schedule, location_info, N_indiv):
-    location = np.random.choice(list(location_info.keys()),(N_indiv,1), p=[0.76, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02])
+def reset(status, alpha, N_indiv):
+    reset_draw = np.random.rand(N_indiv,1)
+    status = np.where((reset_draw < alpha) & (status == 2), 0, status)
+    return status
+
+def switch_location(location, schedule, p_schedule, location_info, N_indiv):
+    sched_index = list(location_info.keys()).index(schedule)
+
+    p_weights = [(1-p_schedule) / (len(location_info) - 1) for loc in location_info]
+    p_weights[sched_index] = p_schedule
+
+    location = np.random.choice(list(location_info.keys()),(N_indiv,1), p=p_weights)
     return location
