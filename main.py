@@ -15,9 +15,11 @@ day_steps = int(1 / dt)  # steps per day (used in for-loop)
 
 I0 = 2  # Start value of I
 
-beta = 0.5 * dt  # Spread porbability
-gamma = 0.0001 * dt  # Revocery probability
-theta = 0.0001 * dt  # Probability of dying
+# parameters of SIR model
+# values correspond to per day.
+beta = 0.5 * dt  # Spread probability
+gamma = (1 / 14) * dt  # Revocery probability
+theta = 0.001 * dt  # Probability of dying
 alpha = 0.05 * dt  # Probability of recovered becoming susceptible again
 
 d = (
@@ -28,7 +30,8 @@ sus_mean = 1
 sus_std = 0.2
 
 
-vaccine_factor = 0.20  # how much the vaccine lowers the risk of infection (0.2->)
+vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
+vaccine_factor = 1
 
 
 g_h = 157  # Grid height   47, 94, 141,
@@ -202,7 +205,7 @@ for day in range(simulation_days):
 
         if step == day_steps * 2 / 5:
             schedule = "kårhuset"  # Ska representer lunchtid
-            d = 0.70
+            d = 0.70 * dt
             location = switch_location(
                 location, schedule, p_schedule, location_info, N_indiv
             )
@@ -211,7 +214,7 @@ for day in range(simulation_days):
 
         if step == day_steps * 3 / 5:
             schedule = "lecture"  # Ska representera föreläsningar
-            d = 0.04
+            d = 0.4 * dt
             location = np.random.choice(list(location_info.keys()), (N_indiv, 1))
             x, y = random_location_coords(location)
             min_x, min_y, max_x, max_y = get_min_max(location)
@@ -284,10 +287,11 @@ if not silent_mode:
     tk.mainloop()
 
 
-plt.plot(range(global_steps), S, c=[0.2, 0.4, 0.7], label="S")
-plt.plot(range(global_steps), I, c=[0.7, 0.3, 0.2], label="I")
-plt.plot(range(global_steps), R, c=[0.3, 0.7, 0.3], label="R")
-plt.plot(range(global_steps), D, c=[0.6, 0.6, 0.6], label="D")
+days = np.linspace(0, simulation_days, num=global_steps)
+plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
+plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
+plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
+plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
 plt.legend()
 plt.xlabel("time")
 plt.ylabel("S, I, R, D")
