@@ -100,14 +100,11 @@ def vaccinate(
 
     elif mode == "risk group":
         sorted_suscep = np.sort(susceptibility, axis=0)
-        # print(sorted_suscep)
         index_cut = int(len(sorted_suscep) * fraction_weakest)
-        # print(index_cut)
         weak_limit = sorted_suscep[index_cut]
-        # print(weak_limit)
-
+        print(f"mean suseptibility before: {np.mean(susceptibility)}")
         susceptibility[susceptibility < weak_limit] *= vaccine_factor
-
+        print(f"mean suseptibility after: {np.mean(susceptibility)}")
     return susceptibility
 
 
