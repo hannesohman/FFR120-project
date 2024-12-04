@@ -17,7 +17,7 @@ I0 = 2  # Start value of I
 
 # parameters of SIR model
 # values correspond to per day.
-beta = 0.4 * dt  # Infection rate
+beta = (1 / 1.8) * dt  # Infection rate
 gamma = (1 / 14) * dt  # Revocery probability
 theta = 0.001 * dt  # Probability of dying
 alpha = 0.02 * dt  # Probability of recovered becoming susceptible again
@@ -295,9 +295,8 @@ plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
 plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
 
 if vaccination_time is not None:
-    plt.axvline(
-        vaccination_time, color="black", linestyle="dashed", label="Vaccination"
-    )
+    vaccine_day = vaccination_time * dt
+    plt.axvline(vaccine_day, color="black", linestyle="dashed", label="Vaccination")
 
 plt.legend()
 plt.xlabel("time")
