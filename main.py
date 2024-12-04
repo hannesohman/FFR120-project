@@ -274,10 +274,10 @@ for day in range(simulation_days):
         break
         # step += 1
 
-
-tk.update_idletasks()
-tk.update()
-tk.mainloop()
+if not silent_mode:
+    tk.update_idletasks()
+    tk.update()
+    tk.mainloop()
 
 
 plt.plot(range(global_steps), S, c=[0.2, 0.4, 0.7])
