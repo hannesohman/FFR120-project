@@ -61,3 +61,32 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
     status = np.where((recover_draw < gamma) & (status == 1), 2, status)
 
     return x, y, status
+
+
+
+
+def spread(x,y,status,beta):
+    infected = np.where(status == 1)[0]
+
+    for i in infected:
+        # Check whether other particles share the same position.
+
+        same_x = np.where(x == x[i])
+        same_y = np.where(y == y[i])
+        same_cell = np.intersect1d(same_x, same_y)
+        for j in same_cell:
+            if status[j] == 0:
+                if np.random.rand() < beta:
+                    status[j] = 1
+    return status
+
+
+def recover_die(status, gamma, theta, N_indiv):
+    recover_draw = np.random.rand(N_indiv,1)
+    status = np.where((recover_draw < gamma) & (status == 1), 2, status)
+    status = np.where((recover_draw < theta) & (status == 1), 3, status)
+    return status
+
+def switch_location(location, schedule, location_info, N_indiv):
+    location = np.random.choice(list(location_info.keys()),(N_indiv,1), p=[0.76, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02])
+    return location
