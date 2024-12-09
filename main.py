@@ -85,6 +85,7 @@ def run_simulation(
     sus_std,
     vaccine_mode,
     vaccine_factor,
+    vaccine_time,
     fraction_weakest,
     silent_mode=True,
 ):
@@ -236,7 +237,7 @@ def run_simulation(
                 x, y = random_location_coords(location, location_info)
                 min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
-            if I[-1] > 0.3 * N_indiv and not vaccination:
+            if I[-1] > vaccine_time * N_indiv and not vaccination:
                 print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
                 # "all even" , "all random" , "risk group"
                 susceptibility = vaccinate(

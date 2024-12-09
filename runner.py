@@ -8,6 +8,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# parameters är en riktigt ful lista jag gjorde lite småtemporärt // Edvin
+# parameterarna är:
+# 0 - beta
+# 1 - gamma
+# 2 - theta
+# 3 - alpha
+# 4 - N_indiv
+# 5 - simulation_days
+# 6 - dt
+# 7 - I0
+# 8 - sus_mean
+# 9 - sus_std
+# 10 - vaccine_mode (STRING)
+# 11 - vaccine_factor
+# 12 - vaccine_time
+# 13 - fraction_weakest
+# 14 - (optional) silent mode (BOOL)
 parameters = [
     1 / 1.8,
     1 / 14,
@@ -21,8 +38,11 @@ parameters = [
     0.2,
     "risk group",
     0.2,
+    0.3,
     0.5,
 ]
+
+
 S, I, R, D = run_simulation(*parameters)
 
 
@@ -58,5 +78,4 @@ vaccine_mode = "risk group"
 vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
 vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
 fraction_weakest = 0.5
-
 """
