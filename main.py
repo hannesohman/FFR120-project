@@ -328,7 +328,7 @@ def run_simulation(parameters):
     R = np.array(R)
     D = np.array(D)
 
-    return (S, I, R, D)
+    return np.array([S, I, R, D])
 
 
 if __name__ == "__main__":
@@ -351,4 +351,4 @@ if __name__ == "__main__":
     }
 
 
-    S, I, R, D = run_simulation(parameters)
+    run_simulation(parameters)
