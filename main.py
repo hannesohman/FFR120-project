@@ -72,35 +72,51 @@ def walls(nx, ny, min_x, min_y, max_x, max_y):
     return nx, ny
 
 
-def run_simulation():
-    silent_mode = True
-    N_indiv = 2000  # * Antalet individer som ska simuleras
+def run_simulation(
+    beta,
+    gamma,
+    theta,
+    alpha,
+    N_individ,
+    simulation_days,
+    dt,
+    I0,
+    sus_mean,
+    sus_std,
+    vaccine_mode,
+    vaccine_factor,
+    fraction_weakest,
+    silent_mode=True,
+):
+    """
+    Main function for running the simulation.
 
-    simulation_days = 300
-    dt = 0.1  # time step (measured in days)
+    Parameters:
+    (beta, gamma, theta, alpha) - SIR parameters
+    N_invid - number of agents
+    simulation_days - how many days to simulate for
+    dt - timestep (1/dt = number of steps per day)
+    I0 - number of infected agents at t = 0
+    diffusion_coeff - probability of agent movement
+    sus_mean - suseptibility mean
+    sus_std - suseptibility standard deviation
+    vaccine_mode - how the vaccination is performed
+    vaccine_factor - factor by which the vaccination decreases sus
+    fraction_weakset - ???
+
+    silent_mode - if true, run without showing simulation
+    """
     day_steps = int(1 / dt)  # steps per day (used in for-loop)
 
-    I0 = 2  # Start value of I
-
-    # parameters of SIR model
-    # values correspond to per day.
-    beta = (1 / 1.8) * dt  # Infection rate
-    gamma = (1 / 14) * dt  # Revocery probability
-    theta = 0.0001 * dt  # Probability of dying
-    alpha = (1 / 25) * dt  # Probability of recovered becoming susceptible again
+    # adjust parameters for dt
+    beta *= dt
+    gamma *= dt
+    theta *= dt
+    alpha *= dt
 
     d = (
         0.6 * dt
     )  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
-
-    sus_mean = 1
-    sus_std = 0.2
-
-    vaccine_mode = "risk group"
-    vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
-    vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
-
-    fraction_weakest = 0.5
 
     g_h = 157  # Grid height   47, 94, 141,
     g_w = 309  # Grid width    96, 192, 288
@@ -310,4 +326,36 @@ def run_simulation():
     plt.show()
 
 
-run_simulation()
+N_indiv = 2000  # * Antalet individer som ska simuleras
+simulation_days = 300
+dt = 0.1  # time step (measured in days)
+I0 = 2  # Start value of I
+
+# SIR params = beta, gamma, theta, alpha
+beta = 1 / 1.8
+gamma = 1 / 14
+theta = 0.0001
+alpha = 1 / 25
+sus_mean = 1
+sus_std = 0.2
+vaccine_mode = "risk group"
+vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
+vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
+fraction_weakest = 0.5
+
+
+run_simulation(
+    beta,
+    gamma,
+    theta,
+    alpha,
+    N_indiv,
+    simulation_days,
+    dt,
+    I0,
+    sus_mean,
+    sus_std,
+    vaccine_mode,
+    vaccine_factor,
+    fraction_weakest,
+)
