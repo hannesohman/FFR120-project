@@ -6,82 +6,11 @@ from diffuse_spread_recover_vectorized import *
 import matplotlib.pyplot as plt
 
 
-silent_mode = True
-N_indiv = 2000  # * Antalet individer som ska simuleras
-
-simulation_days = 300
-dt = 0.1  # time step (measured in days)
-day_steps = int(1 / dt)  # steps per day (used in for-loop)
-
-I0 = 2  # Start value of I
-
-# parameters of SIR model
-# values correspond to per day.
-beta = (1 / 1.8) * dt  # Infection rate
-gamma = (1 / 14) * dt  # Revocery probability
-theta = 0.0001 * dt  # Probability of dying
-alpha = (1 / 25) * dt  # Probability of recovered becoming susceptible again
-
-d = (
-    0.6 * dt
-)  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
-
-sus_mean = 1
-sus_std = 0.2
-
-vaccine_mode = "risk group"
-vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
-vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
-
-fraction_weakest = 0.5
-
-
-g_h = 157  # Grid height   47, 94, 141,
-g_w = 309  # Grid width    96, 192, 288
-# grid förhållandet är 96 : 47 (309 : 157)
-
-ratio = 4  # * Förhållandet mellan upplösningen på fönstret och upplösningen på rutnätet
-vaccination_time = None
-
-if not silent_mode:
-    tk = Tk()
-    tk.geometry(f"{g_w*ratio}x{g_h*ratio}")
-    tk.configure(background="#000000")
-
-    canvas = Canvas(tk, background="#ECECEC")
-    tk.attributes("-topmost", 0)
-    canvas.place(x=0, y=0, height=g_h * ratio, width=g_w * ratio)
-
-# positioner och gränser för platser på campus
-location_info = {
-    "kårhuset": (0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h),
-    "vasa": (0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h),
-    "mc2": (0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h),
-    "fysikhuset": (0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h),
-    "kemihuset": (0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h),
-    "biblioteket": (0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h),
-    "mattehuset": (0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h),
-    "HA": (0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h),
-    "HB": (0.15 * g_w, 0.76 * g_h, 0.26 * g_w, 0.81 * g_h),
-    "HC": (0.05 * g_w, 0.76 * g_h, 0.14 * g_w, 0.81 * g_h),
-    "EDIT": (0.06 * g_w, 0.52 * g_h, 0.15 * g_w, 0.74 * g_h),
-    "maskinhuset": (0.17 * g_w, 0.51 * g_h, 0.34 * g_w, 0.73 * g_h),
-    "SB-huset": (0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h),
-}
-
-if not silent_mode:
-    # Följande ritar upp rektanglar för områdena.
-    for key, val in location_info.items():
-        coords = [c * ratio for c in val]
-        coords = [np.round(val) for val in coords]
-        canvas.create_rectangle(coords)
-
-
-def get_min_max(location):
+def get_min_max(location, location_info):
     # Tar emot individernas tilldelade områden
     # Hämtar en individs gränser baserat på vilket rum den befinner sig i.
     # Returnerar fyrra kolumnvektorer med gränserna på individernas tilldelade område.
-
+    N_indiv = np.size(location, axis=0)
     min_x = np.zeros((N_indiv, 1))
     min_y = np.zeros((N_indiv, 1))
     max_x = np.zeros((N_indiv, 1))
@@ -98,10 +27,11 @@ def get_min_max(location):
     return min_x, min_y, max_x, max_y
 
 
-def random_location_coords(location):
+def random_location_coords(location, location_info):
     # Tar emot individers tilldelade område
     # Anger en random slumpmässig startposition för en individ i det område individen tillhör
     # Returnerar sumpmässiga koordinater inom det tilldelade området
+    N_indiv = np.size(location, axis=0)
 
     x = np.zeros((N_indiv, 1))
     y = np.zeros((N_indiv, 1))
@@ -114,7 +44,7 @@ def random_location_coords(location):
     return x, y
 
 
-def move(x, y, d):
+def move(x, y, d, status):
     # Tar emot individers nuvarande koordinater.
     # Flyttar individen i x- och y-led med -1, 0, eller +1 steg
     # Returnerar de nya koordinaterna
@@ -142,172 +72,242 @@ def walls(nx, ny, min_x, min_y, max_x, max_y):
     return nx, ny
 
 
-location0 = np.random.choice(list(location_info.keys()), (N_indiv, 1))
+def run_simulation():
+    silent_mode = True
+    N_indiv = 2000  # * Antalet individer som ska simuleras
 
-min_x, min_y, max_x, max_y = get_min_max(location0)
+    simulation_days = 300
+    dt = 0.1  # time step (measured in days)
+    day_steps = int(1 / dt)  # steps per day (used in for-loop)
 
-x0, y0 = random_location_coords(location0)
+    I0 = 2  # Start value of I
 
-status = np.zeros((N_indiv, 1))
-status[:I0] = 1
+    # parameters of SIR model
+    # values correspond to per day.
+    beta = (1 / 1.8) * dt  # Infection rate
+    gamma = (1 / 14) * dt  # Revocery probability
+    theta = 0.0001 * dt  # Probability of dying
+    alpha = (1 / 25) * dt  # Probability of recovered becoming susceptible again
 
-susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
+    d = (
+        0.6 * dt
+    )  # Diffusion, sannolikheten att en individ förflyttar sig. Är lägre under föreläsningar och högre under lunch.
 
+    sus_mean = 1
+    sus_std = 0.2
 
-individuals_dots = []
-if not silent_mode:
-    for id in range(N_indiv):
-        if status[id] == 0:
-            agent_color = "#1f77b4"
-        elif status[id] == 1:
-            agent_color = "#d62728"
-        else:
-            agent_color = "#2ca02c"
+    vaccine_mode = "risk group"
+    vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
+    vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
 
-        individuals_dots.append(
-            canvas.create_oval(
-                x0[id][0] * ratio - 2,
-                y0[id][0] * ratio - 2,
-                x0[id][0] * ratio + 2,
-                y0[id][0] * ratio + 2,
-                outline="",
-                fill=agent_color,
-            )
-        )
+    fraction_weakest = 0.5
 
+    g_h = 157  # Grid height   47, 94, 141,
+    g_w = 309  # Grid width    96, 192, 288
+    # grid förhållandet är 96 : 47 (309 : 157)
 
-location = location0
-x = x0
-y = y0
+    ratio = (
+        4  # * Förhållandet mellan upplösningen på fönstret och upplösningen på rutnätet
+    )
+    vaccination_time = None
 
-p_schedule = 0.80
+    if not silent_mode:
+        tk = Tk()
+        tk.geometry(f"{g_w*ratio}x{g_h*ratio}")
+        tk.configure(background="#000000")
 
+        canvas = Canvas(tk, background="#ECECEC")
+        tk.attributes("-topmost", 0)
+        canvas.place(x=0, y=0, height=g_h * ratio, width=g_w * ratio)
 
-S = []
-I = []
-R = []
-D = []
+    # positioner och gränser för platser på campus
+    location_info = {
+        "kårhuset": (0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h),
+        "vasa": (0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h),
+        "mc2": (0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h),
+        "fysikhuset": (0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h),
+        "kemihuset": (0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h),
+        "biblioteket": (0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h),
+        "mattehuset": (0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h),
+        "HA": (0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h),
+        "HB": (0.15 * g_w, 0.76 * g_h, 0.26 * g_w, 0.81 * g_h),
+        "HC": (0.05 * g_w, 0.76 * g_h, 0.14 * g_w, 0.81 * g_h),
+        "EDIT": (0.06 * g_w, 0.52 * g_h, 0.15 * g_w, 0.74 * g_h),
+        "maskinhuset": (0.17 * g_w, 0.51 * g_h, 0.34 * g_w, 0.73 * g_h),
+        "SB-huset": (0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h),
+    }
 
-running = True
+    if not silent_mode:
+        # Följande ritar upp rektanglar för områdena.
+        for key, val in location_info.items():
+            coords = [c * ratio for c in val]
+            coords = [np.round(val) for val in coords]
+            canvas.create_rectangle(coords)
+    location0 = np.random.choice(list(location_info.keys()), (N_indiv, 1))
 
-global_steps = 0
+    min_x, min_y, max_x, max_y = get_min_max(location0, location_info)
 
-vaccination = False
+    x0, y0 = random_location_coords(location0, location_info)
 
-print_progress = True
+    status = np.zeros((N_indiv, 1))
+    status[:I0] = 1
 
-for day in range(simulation_days):
-    # step = 0
+    susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
 
-    for step in range(day_steps):
-        S.append(np.size(np.where(status == 0)[0]))
-        I.append(np.size(np.where(status == 1)[0]))
-        R.append(np.size(np.where(status == 2)[0]))
-        D.append(np.size(np.where(status == 3)[0]))
-
-        if step == day_steps * 2 / 5:
-            schedule = "kårhuset"  # Ska representer lunchtid
-            d = 0.70 * dt
-            location = switch_location(
-                location, schedule, p_schedule, location_info, N_indiv
-            )
-            x, y = random_location_coords(location)
-            min_x, min_y, max_x, max_y = get_min_max(location)
-
-        if step == day_steps * 3 / 5:
-            schedule = "lecture"  # Ska representera föreläsningar
-            d = 0.4 * dt
-            location = np.random.choice(list(location_info.keys()), (N_indiv, 1))
-            x, y = random_location_coords(location)
-            min_x, min_y, max_x, max_y = get_min_max(location)
-
-        if I[-1] > 0.3 * N_indiv and not vaccination:
-            print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
-            # "all even" , "all random" , "risk group"
-            susceptibility = vaccinate(
-                susceptibility,
-                N_indiv,
-                mode=vaccine_mode,
-                vaccine_factor=vaccine_factor,
-                fraction_weakest=fraction_weakest,
-            )
-            vaccination = True
-            vaccination_time = global_steps
-
-        nx, ny = move(x, y, d)  # Flytta inddividerna
-
-        nx, ny = walls(nx, ny, min_x, min_y, max_x, max_y)
-
-        status = spread(nx, ny, status, beta, susceptibility)
-        status = recover_die(status, gamma, theta, N_indiv)
-        status = reset(status, alpha, N_indiv)
-
-        for id, indiv in enumerate(
-            individuals_dots
-        ):  # Rita deras nya position på grafiken
+    individuals_dots = []
+    if not silent_mode:
+        for id in range(N_indiv):
             if status[id] == 0:
                 agent_color = "#1f77b4"
             elif status[id] == 1:
                 agent_color = "#d62728"
-            elif status[id] == 2:
+            else:
                 agent_color = "#2ca02c"
-            elif status[id] == 3:
-                agent_color = "#bbbbbb"
 
-            canvas.coords(
-                indiv,
-                nx[id][0] * ratio - 2,
-                ny[id][0] * ratio - 2,
-                nx[id][0] * ratio + 2,
-                ny[id][0] * ratio + 2,
+            individuals_dots.append(
+                canvas.create_oval(
+                    x0[id][0] * ratio - 2,
+                    y0[id][0] * ratio - 2,
+                    x0[id][0] * ratio + 2,
+                    y0[id][0] * ratio + 2,
+                    outline="",
+                    fill=agent_color,
+                )
             )
-            canvas.itemconfig(indiv, fill=agent_color)
 
-        x = nx
-        y = ny
+    location = location0
+    x = x0
+    y = y0
 
-        if not silent_mode:
-            tk.update_idletasks()
-            tk.update()
-            time.sleep(0.0000001)
-            # print(
-            #    f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |"
-            # )
-        if print_progress:
-            total_steps = simulation_days * day_steps
-            print_interval = 200
+    p_schedule = 0.80
 
-            if global_steps % int(total_steps / print_interval) == 0:
-                percent_done = round(100 * global_steps / total_steps, 2)
-                print(f"simulating... {percent_done}", end="\r")
-        global_steps += 1
+    S = []
+    I = []
+    R = []
+    D = []
 
+    running = True
+
+    global_steps = 0
+
+    vaccination = False
+
+    print_progress = True
+
+    for day in range(simulation_days):
+        # step = 0
+
+        for step in range(day_steps):
+            S.append(np.size(np.where(status == 0)[0]))
+            I.append(np.size(np.where(status == 1)[0]))
+            R.append(np.size(np.where(status == 2)[0]))
+            D.append(np.size(np.where(status == 3)[0]))
+
+            if step == day_steps * 2 / 5:
+                schedule = "kårhuset"  # Ska representer lunchtid
+                d = 0.70 * dt
+                location = switch_location(
+                    location, schedule, p_schedule, location_info, N_indiv
+                )
+                x, y = random_location_coords(location, location_info)
+                min_x, min_y, max_x, max_y = get_min_max(location, location_info)
+
+            if step == day_steps * 3 / 5:
+                schedule = "lecture"  # Ska representera föreläsningar
+                d = 0.4 * dt
+                location = np.random.choice(list(location_info.keys()), (N_indiv, 1))
+                x, y = random_location_coords(location, location_info)
+                min_x, min_y, max_x, max_y = get_min_max(location, location_info)
+
+            if I[-1] > 0.3 * N_indiv and not vaccination:
+                print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
+                # "all even" , "all random" , "risk group"
+                susceptibility = vaccinate(
+                    susceptibility,
+                    N_indiv,
+                    mode=vaccine_mode,
+                    vaccine_factor=vaccine_factor,
+                    fraction_weakest=fraction_weakest,
+                )
+                vaccination = True
+                vaccination_time = global_steps
+
+            nx, ny = move(x, y, d, status)  # Flytta inddividerna
+
+            nx, ny = walls(nx, ny, min_x, min_y, max_x, max_y)
+
+            status = spread(nx, ny, status, beta, susceptibility)
+            status = recover_die(status, gamma, theta, N_indiv)
+            status = reset(status, alpha, N_indiv)
+
+            for id, indiv in enumerate(
+                individuals_dots
+            ):  # Rita deras nya position på grafiken
+                if status[id] == 0:
+                    agent_color = "#1f77b4"
+                elif status[id] == 1:
+                    agent_color = "#d62728"
+                elif status[id] == 2:
+                    agent_color = "#2ca02c"
+                elif status[id] == 3:
+                    agent_color = "#bbbbbb"
+
+                canvas.coords(
+                    indiv,
+                    nx[id][0] * ratio - 2,
+                    ny[id][0] * ratio - 2,
+                    nx[id][0] * ratio + 2,
+                    ny[id][0] * ratio + 2,
+                )
+                canvas.itemconfig(indiv, fill=agent_color)
+
+            x = nx
+            y = ny
+
+            if not silent_mode:
+                tk.update_idletasks()
+                tk.update()
+                time.sleep(0.0000001)
+                # print(
+                #    f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |"
+                # )
+            if print_progress:
+                total_steps = simulation_days * day_steps
+                print_interval = 200
+
+                if global_steps % int(total_steps / print_interval) == 0:
+                    percent_done = round(100 * global_steps / total_steps, 2)
+                    print(f"simulating... {percent_done}", end="\r")
+            global_steps += 1
+
+            if I[-1] == 0:  # or step == 600:
+                running = False
+                break
         if I[-1] == 0:  # or step == 600:
             running = False
             break
-    if I[-1] == 0:  # or step == 600:
-        running = False
-        break
-        # step += 1
+            # step += 1
 
-if not silent_mode:
-    tk.update_idletasks()
-    tk.update()
-    tk.mainloop()
+    if not silent_mode:
+        tk.update_idletasks()
+        tk.update()
+        tk.mainloop()
+
+    days = np.linspace(0, simulation_days, num=global_steps)
+    plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
+    plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
+    plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
+    plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
+
+    if vaccination_time is not None:
+        vaccine_day = vaccination_time * dt
+        plt.axvline(vaccine_day, color="black", linestyle="dashed", label="Vaccination")
+
+    plt.legend()
+    plt.xlabel("time")
+    plt.ylabel("S, I, R, D")
+
+    plt.show()
 
 
-days = np.linspace(0, simulation_days, num=global_steps)
-plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
-plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
-plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
-plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
-
-if vaccination_time is not None:
-    vaccine_day = vaccination_time * dt
-    plt.axvline(vaccine_day, color="black", linestyle="dashed", label="Vaccination")
-
-plt.legend()
-plt.xlabel("time")
-plt.ylabel("S, I, R, D")
-
-plt.show()
+run_simulation()
