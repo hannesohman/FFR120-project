@@ -6,25 +6,21 @@
 from main import run_simulation
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 
-# parameters är en riktigt ful lista jag gjorde lite småtemporärt // Edvin
-# parameterarna är:
-# 0 - beta
-# 1 - gamma
-# 2 - theta
-# 3 - alpha
-# 4 - N_indiv
-# 5 - simulation_days
-# 6 - dt
-# 7 - I0
-# 8 - sus_mean
-# 9 - sus_std
-# 10 - vaccine_mode (STRING)
-# 11 - vaccine_factor
-# 12 - vaccine_time
-# 13 - fraction_weakest
-# 14 - (optional) silent mode (BOOL)
+def save_results(results, parameters, foldername, filename):
+    """
+    Saves parameters and results to filename, filename_parameters in a given folder
+    Results has to be a ndarray of shape (4, N_indivd)
+    """
+    # save results
+    np.savetxt(f"results/{foldername}/{filename}_results.txt", results)
+    # save parameters
+    with open(f"results/{foldername}/{filename}_parameters.json", "w+") as file:
+        json.dump(data, file)
+
+
 parameters = {
     "beta": 1 / 1.8,
     "gamma": 1 / 14,
@@ -43,7 +39,11 @@ parameters = {
 }
 
 
-S, I, R, D = run_simulation(parameters)
+results = run_simulation(parameters)
+S = results[0]
+I = results[1]
+R = results[2]
+D = results[3]
 
 
 days = np.linspace(0, parameters["simulation_days"], num=S.size)
@@ -78,4 +78,6 @@ vaccine_mode = "risk group"
 vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
 vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
 fraction_weakest = 0.5
+"""
+"""
 """
