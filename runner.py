@@ -37,11 +37,12 @@ def save_results(result, parameters, foldername, filename):
     plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
-    plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
+    # deaths are not really showing anything for now
+    # plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
 
     plt.legend()
-    plt.xlabel("time")
-    plt.ylabel("S, I, R, D")
+    plt.xlabel("Time (days)")
+    plt.ylabel("Individuals")
 
     plt.savefig(f"./results/{foldername}/{filename}_plot.png")
     plt.clf()
@@ -56,46 +57,38 @@ parameters = {
     "N_indiv": 2000,
     "simulation_days": 300,
     "dt": 0.1,
-    "I0": 4,  # too low -> risk of disease dying out
+    "I0": 10,  # too low -> risk of disease dying out
     "sus_mean": 1,
     "sus_std": 0.2,
     "vaccine_mode": "risk group",
     "vaccine_factor": 0.2,
     "vaccine_time": 0.1,  # fraction of infected population before vaccination
     "fraction_weakest": 0.5,
+    "lockdown_time": 1,
     "silent_mode": True,
 }
 
 foldername = time.strftime("%Y-%m-%d_%H_%M_%S")
-
-# loop over multiple trials
+"""
+# loop over multiple vaccination times, no lockdown
 vaccination_times = np.linspace(0, 1, num=3)
-# round so that they can be handled easily
-vaccination_times = np.round(vaccination_times, decimals=2)
+vaccination_times = np.round(vaccination_times, decimals=2)  # round for cleanliness
 for i, vaccination_time in enumerate(vaccination_times):
     parameters["vaccine_time"] = vaccination_time
+    parameters["lockdown_time"] = 1
     filename = f"Vaccination_{vaccination_time}"
 
     result = run_simulation(parameters)
     save_results(result, parameters, foldername, filename)
-
-
 """
-# "original" parameters
-N_indiv = 2000  # * Antalet individer som ska simuleras
-simulation_days = 300
-dt = 0.1  # time step (measured in days)
-I0 = 2  # Start value of I
 
-# SIR params = beta, gamma, theta, alpha
-beta = 1 / 1.8
-gamma = 1 / 14
-theta = 0.0001
-alpha = 1 / 25
-sus_mean = 1
-sus_std = 0.2
-vaccine_mode = "risk group"
-vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
-vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
-fraction_weakest = 0.5
-"""
+# loop over multiple lockdown times (fixed vaccination time at )
+lockdown_times = np.linspace(0, 1, num=3)
+lockdown_times = np.round(lockdown_times, decimals=2)  # round for cleanliness
+for i, lockdown_time in enumerate(lockdown_times):
+    parameters["lockdown_time"] = lockdown_time
+    parameters["vaccination_time"] = 1
+    filename = f"Lockdown_{lockdown_time}"
+
+    result = run_simulation(parameters)
+    save_results(result, parameters, foldername, filename)
