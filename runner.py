@@ -31,7 +31,7 @@ parameters = {
     "theta": 0.0001,
     "alpha": 1 / 25,
     "N_indiv": 2000,
-    "simulation_days": 300,
+    "simulation_days": 30,
     "dt": 0.1,
     "I0": 2,
     "sus_mean": 1,
@@ -40,6 +40,7 @@ parameters = {
     "vaccine_factor": 0.2,
     "vaccine_time": 0.3,
     "fraction_weakest": 0.5,
+    "silent_mode": False,
 }
 
 

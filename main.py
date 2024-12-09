@@ -18,7 +18,7 @@ def get_min_max(location, location_info):
     max_y = np.zeros((N_indiv, 1))
 
     for idx, loc in enumerate(location):
-        x0, y0, x1, y1 = location_info[loc[0]]
+        x0, y0, x1, y1 = location_info[loc[0]][0]
         min_x[idx] = x0 + 1
         min_y[idx] = y0 + 1
         max_x[idx] = x1 - 1
@@ -37,7 +37,7 @@ def random_location_coords(location, location_info):
     y = np.zeros((N_indiv, 1))
 
     for idx, loc in enumerate(location):
-        x0, y0, x1, y1 = location_info[loc[0]]
+        x0, y0, x1, y1 = location_info[loc[0]][0]
 
         x[idx] = int((np.random.rand() * (x1 - x0) + x0))
         y[idx] = int((np.random.rand() * (y1 - y0) + y0))
@@ -142,34 +142,40 @@ def run_simulation(parameters):
         tk.attributes("-topmost", 0)
         canvas.place(x=0, y=0, height=g_h * ratio, width=g_w * ratio)
 
-    # positioner och gränser för platser på campus
+    # positioner och gränser för platser på campus, sista siffran är en ratio med hur många av befolkningen som har det som sin "home_base"
     location_info = {
-        "kårhuset": (0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h),
-        "vasa": (0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h),
-        "mc2": (0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h),
-        "fysikhuset": (0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h),
-        "kemihuset": (0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h),
-        "biblioteket": (0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h),
-        "mattehuset": (0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h),
-        "HA": (0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h),
-        "HB": (0.15 * g_w, 0.76 * g_h, 0.26 * g_w, 0.81 * g_h),
-        "HC": (0.05 * g_w, 0.76 * g_h, 0.14 * g_w, 0.81 * g_h),
-        "EDIT": (0.06 * g_w, 0.52 * g_h, 0.15 * g_w, 0.74 * g_h),
-        "maskinhuset": (0.17 * g_w, 0.51 * g_h, 0.34 * g_w, 0.73 * g_h),
-        "SB-huset": (0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h),
+        "kårhuset": [(0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h)   , 4],
+        "vasa": [(0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h)       , 10],
+        "mc2": [(0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h)        , 3],
+        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h) , 8],
+        "kemihuset": [(0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h)  , 8],
+        "biblioteket": [(0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h), 2],
+        "mattehuset": [(0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h) , 2],
+        "HA": [(0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h)         , 3],
+        "HB": [(0.15 * g_w, 0.76 * g_h, 0.26 * g_w, 0.81 * g_h)         , 3],
+        "HC": [(0.05 * g_w, 0.76 * g_h, 0.14 * g_w, 0.81 * g_h)         , 3],
+        "EDIT": [(0.06 * g_w, 0.52 * g_h, 0.15 * g_w, 0.74 * g_h)       , 8],
+        "maskinhuset": [(0.17 * g_w, 0.51 * g_h, 0.34 * g_w, 0.73 * g_h), 12],
+        "SB-huset": [(0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h)   , 12],
     }
 
     if not silent_mode:
         # Följande ritar upp rektanglar för områdena.
         for key, val in location_info.items():
-            coords = [c * ratio for c in val]
+            coords = [c * ratio for c in val[0]]
             coords = [np.round(val) for val in coords]
             canvas.create_rectangle(coords)
-    location0 = np.random.choice(list(location_info.keys()), (N_indiv, 1))
 
-    min_x, min_y, max_x, max_y = get_min_max(location0, location_info)
 
-    x0, y0 = random_location_coords(location0, location_info)
+    home_weights = [vals[1] for vals in location_info.values()]
+    home_weights = [p / sum(home_weights) for p in home_weights]
+
+    home_base = np.random.choice(list(location_info.keys()), (N_indiv, 1), p=home_weights)
+    print(home_base)
+
+    min_x, min_y, max_x, max_y = get_min_max(home_base, location_info)
+
+    x0, y0 = random_location_coords(home_base, location_info)
 
     status = np.zeros((N_indiv, 1))
     status[:I0] = 1
@@ -200,7 +206,7 @@ def run_simulation(parameters):
                 )
             )
 
-    location = location0
+    location = home_base
     x = x0
     y = y0
 
@@ -240,7 +246,7 @@ def run_simulation(parameters):
             if step == day_steps * 3 / 5:
                 schedule = "lecture"  # Ska representera föreläsningar
                 d = 0.4 * dt
-                location = np.random.choice(list(location_info.keys()), (N_indiv, 1))
+                location = home_base
                 x, y = random_location_coords(location, location_info)
                 min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
@@ -323,3 +329,26 @@ def run_simulation(parameters):
     D = np.array(D)
 
     return (S, I, R, D)
+
+
+if __name__ == "__main__":
+    parameters = {
+        "beta": 1 / 1.8,
+        "gamma": 1 / 14,
+        "theta": 0.0001,
+        "alpha": 1 / 25,
+        "N_indiv": 2000,
+        "simulation_days": 300,
+        "dt": 0.1,
+        "I0": 2,
+        "sus_mean": 1,
+        "sus_std": 0.2,
+        "vaccine_mode": "risk group",
+        "vaccine_factor": 0.2,
+        "vaccine_time": 0.3,
+        "fraction_weakest": 0.5,
+        "silent_mode": False,
+    }
+
+
+    S, I, R, D = run_simulation(parameters)

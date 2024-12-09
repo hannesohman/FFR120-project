@@ -95,7 +95,7 @@ def vaccinate(
     if mode == "all even":
         susceptibility *= vaccine_factor
     elif mode == "random":
-        draws = np.random.uniform(N_individuals)
+        draws = np.random.uniform(N_indiv)
         # using fraction_weakest to mean percentage to vaccinate
         # TODO change name of fraction_weakest to fraction_vaccinated
         susceptibility[draws < fraction_weakest] *= vaccine_factor
@@ -112,6 +112,8 @@ def vaccinate(
 
 def switch_location(location, schedule, p_schedule, location_info, N_indiv):
     sched_index = list(location_info.keys()).index(schedule)
+
+    
 
     p_weights = [(1 - p_schedule) / (len(location_info) - 1) for loc in location_info]
     p_weights[sched_index] = p_schedule
