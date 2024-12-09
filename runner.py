@@ -7,6 +7,8 @@ from main import run_simulation
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import time
+import os
 
 
 def save_results(results, parameters, foldername, filename):
@@ -14,11 +16,19 @@ def save_results(results, parameters, foldername, filename):
     Saves parameters and results to filename, filename_parameters in a given folder
     Results has to be a ndarray of shape (4, N_indivd)
     """
-    # save results
-    np.savetxt(f"results/{foldername}/{filename}_results.txt", results)
+
+    # create directory
+    newpath = f"./results/{foldername}"
+    if not os.path.exists(newpath):
+        print(f"making {newpath}")
+        os.makedirs(newpath)
+
     # save parameters
-    with open(f"results/{foldername}/{filename}_parameters.json", "w+") as file:
-        json.dump(data, file)
+    with open(f"./results/{foldername}/{filename}_parameters.json", "w+") as file:
+        json.dump(parameters, file)
+
+    # save results
+    np.savetxt(f"./results/{foldername}/{filename}_results.txt", results)
 
 
 parameters = {
@@ -27,7 +37,7 @@ parameters = {
     "theta": 0.0001,
     "alpha": 1 / 25,
     "N_indiv": 2000,
-    "simulation_days": 300,
+    "simulation_days": 30,
     "dt": 0.1,
     "I0": 2,
     "sus_mean": 1,
@@ -39,13 +49,16 @@ parameters = {
 }
 
 
-results = run_simulation(parameters)
+result = run_simulation(parameters)
+foldername = time.strftime("%Y-%m-%d_%H_%M_%S")
+filename = "test"
+save_results(result, parameters, foldername, filename)
+
+
 S = results[0]
 I = results[1]
 R = results[2]
 D = results[3]
-
-
 days = np.linspace(0, parameters["simulation_days"], num=S.size)
 plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
 plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
