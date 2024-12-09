@@ -56,7 +56,7 @@ parameters = {
     "N_indiv": 2000,
     "simulation_days": 300,
     "dt": 0.1,
-    "I0": 2,
+    "I0": 4,  # too low -> risk of disease dying out
     "sus_mean": 1,
     "sus_std": 0.2,
     "vaccine_mode": "risk group",
