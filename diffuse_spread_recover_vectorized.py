@@ -104,16 +104,14 @@ def vaccinate(
         sorted_suscep = np.sort(susceptibility, axis=0)
         index_cut = int(len(sorted_suscep) * fraction_weakest)
         weak_limit = sorted_suscep[index_cut]
-        print(f"mean suseptibility before: {np.mean(susceptibility)}")
+        # print(f"mean suseptibility before: {np.mean(susceptibility)}")
         susceptibility[susceptibility > weak_limit] *= vaccine_factor
-        print(f"mean suseptibility after: {np.mean(susceptibility)}")
+        # print(f"mean suseptibility after: {np.mean(susceptibility)}")
     return susceptibility
 
 
 def switch_location(location, schedule, p_schedule, location_info, N_indiv):
     sched_index = list(location_info.keys()).index(schedule)
-
-    
 
     p_weights = [(1 - p_schedule) / (len(location_info) - 1) for loc in location_info]
     p_weights[sched_index] = p_schedule

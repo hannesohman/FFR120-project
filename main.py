@@ -144,19 +144,19 @@ def run_simulation(parameters):
 
     # positioner och gränser för platser på campus, sista siffran är en ratio med hur många av befolkningen som har det som sin "home_base"
     location_info = {
-        "kårhuset": [(0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h)   , 4],
-        "vasa": [(0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h)       , 10],
-        "mc2": [(0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h)        , 3],
-        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h) , 8],
-        "kemihuset": [(0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h)  , 8],
+        "kårhuset": [(0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h), 4],
+        "vasa": [(0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h), 10],
+        "mc2": [(0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h), 3],
+        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h), 8],
+        "kemihuset": [(0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h), 8],
         "biblioteket": [(0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h), 2],
-        "mattehuset": [(0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h) , 2],
-        "HA": [(0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h)         , 3],
-        "HB": [(0.15 * g_w, 0.76 * g_h, 0.26 * g_w, 0.81 * g_h)         , 3],
-        "HC": [(0.05 * g_w, 0.76 * g_h, 0.14 * g_w, 0.81 * g_h)         , 3],
-        "EDIT": [(0.06 * g_w, 0.52 * g_h, 0.15 * g_w, 0.74 * g_h)       , 8],
+        "mattehuset": [(0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h), 2],
+        "HA": [(0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h), 3],
+        "HB": [(0.15 * g_w, 0.76 * g_h, 0.26 * g_w, 0.81 * g_h), 3],
+        "HC": [(0.05 * g_w, 0.76 * g_h, 0.14 * g_w, 0.81 * g_h), 3],
+        "EDIT": [(0.06 * g_w, 0.52 * g_h, 0.15 * g_w, 0.74 * g_h), 8],
         "maskinhuset": [(0.17 * g_w, 0.51 * g_h, 0.34 * g_w, 0.73 * g_h), 12],
-        "SB-huset": [(0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h)   , 12],
+        "SB-huset": [(0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h), 12],
     }
 
     if not silent_mode:
@@ -166,12 +166,13 @@ def run_simulation(parameters):
             coords = [np.round(val) for val in coords]
             canvas.create_rectangle(coords)
 
-
     home_weights = [vals[1] for vals in location_info.values()]
     home_weights = [p / sum(home_weights) for p in home_weights]
 
-    home_base = np.random.choice(list(location_info.keys()), (N_indiv, 1), p=home_weights)
-    print(home_base)
+    home_base = np.random.choice(
+        list(location_info.keys()), (N_indiv, 1), p=home_weights
+    )
+    # print(home_base)
 
     min_x, min_y, max_x, max_y = get_min_max(home_base, location_info)
 
@@ -251,7 +252,7 @@ def run_simulation(parameters):
                 min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
             if I[-1] > vaccine_time * N_indiv and not vaccination:
-                print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
+                # print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
                 # "all even" , "all random" , "risk group"
                 susceptibility = vaccinate(
                     susceptibility,
@@ -349,6 +350,5 @@ if __name__ == "__main__":
         "fraction_weakest": 0.5,
         "silent_mode": False,
     }
-
 
     run_simulation(parameters)
