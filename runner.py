@@ -24,21 +24,23 @@ vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
 vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
 fraction_weakest = 0.5
 
-S, I, R, D = run_simulation(
-    beta,
-    gamma,
-    theta,
-    alpha,
-    N_indiv,
-    simulation_days,
-    dt,
-    I0,
-    sus_mean,
-    sus_std,
-    vaccine_mode,
-    vaccine_factor,
-    fraction_weakest,
-)
+parameters = [
+    1 / 1.8,
+    1 / 14,
+    0.0001,
+    1 / 25,
+    2000,
+    30,
+    0.1,
+    2,
+    1,
+    0.2,
+    "risk group",
+    0.2,
+    1.0,
+    0.5,
+]
+S, I, R, D = run_simulation(*parameters)
 
 
 days = np.linspace(0, simulation_days, num=S.size)
