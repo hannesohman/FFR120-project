@@ -175,6 +175,9 @@ def run_simulation(parameters):
     status[:I0] = 1
 
     susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
+    # no one has a lower suseptibility than 1
+    # higher suseptibility -> higher risk of being infected
+    susceptibility[susceptibility < 1] = 1
 
     individuals_dots = []
     if not silent_mode:

@@ -94,16 +94,18 @@ def vaccinate(
 ):
     if mode == "all even":
         susceptibility *= vaccine_factor
-
-    elif mode == "all random":
-        susceptibility *= np.random.rand(N_indiv, 1)
+    elif mode == "random":
+        draws = np.random.uniform(N_individuals)
+        # using fraction_weakest to mean percentage to vaccinate
+        # TODO change name of fraction_weakest to fraction_vaccinated
+        susceptibility[draws < fraction_weakest] *= vaccine_factor
 
     elif mode == "risk group":
         sorted_suscep = np.sort(susceptibility, axis=0)
         index_cut = int(len(sorted_suscep) * fraction_weakest)
         weak_limit = sorted_suscep[index_cut]
         print(f"mean suseptibility before: {np.mean(susceptibility)}")
-        susceptibility[susceptibility < weak_limit] *= vaccine_factor
+        susceptibility[susceptibility > weak_limit] *= vaccine_factor
         print(f"mean suseptibility after: {np.mean(susceptibility)}")
     return susceptibility
 
