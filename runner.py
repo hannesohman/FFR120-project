@@ -69,10 +69,11 @@ parameters = {
 foldername = time.strftime("%Y-%m-%d_%H_%M_%S")
 
 # loop over multiple trials
-vaccination_times = np.linspace(0, 1, num=10)
+vaccination_times = np.linspace(0, 1, num=3)
 # round so that they can be handled easily
 vaccination_times = np.round(vaccination_times, decimals=2)
 for i, vaccination_time in enumerate(vaccination_times):
+    parameters["vaccine_time"] = vaccination_time
     filename = f"Vaccination_{vaccination_time}"
 
     result = run_simulation(parameters)
