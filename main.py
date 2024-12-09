@@ -77,7 +77,7 @@ def run_simulation(
     gamma,
     theta,
     alpha,
-    N_individ,
+    N_indiv,
     simulation_days,
     dt,
     I0,
@@ -90,6 +90,7 @@ def run_simulation(
 ):
     """
     Main function for running the simulation.
+    Return the S,I,R values as numpy vectors, with time step dt over simulation_days
 
     Parameters:
     (beta, gamma, theta, alpha) - SIR parameters
@@ -308,54 +309,9 @@ def run_simulation(
         tk.update_idletasks()
         tk.update()
         tk.mainloop()
+    S = np.array(S)
+    I = np.array(I)
+    R = np.array(R)
+    D = np.array(D)
 
-    days = np.linspace(0, simulation_days, num=global_steps)
-    plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
-    plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
-    plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
-    plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
-
-    if vaccination_time is not None:
-        vaccine_day = vaccination_time * dt
-        plt.axvline(vaccine_day, color="black", linestyle="dashed", label="Vaccination")
-
-    plt.legend()
-    plt.xlabel("time")
-    plt.ylabel("S, I, R, D")
-
-    plt.show()
-
-
-N_indiv = 2000  # * Antalet individer som ska simuleras
-simulation_days = 300
-dt = 0.1  # time step (measured in days)
-I0 = 2  # Start value of I
-
-# SIR params = beta, gamma, theta, alpha
-beta = 1 / 1.8
-gamma = 1 / 14
-theta = 0.0001
-alpha = 1 / 25
-sus_mean = 1
-sus_std = 0.2
-vaccine_mode = "risk group"
-vaccine_factor = 0.20  # factor by which the vaccination decreases suseptability
-vaccine_factor = 1.0  # factor by which the vaccination decreases suseptability
-fraction_weakest = 0.5
-
-
-run_simulation(
-    beta,
-    gamma,
-    theta,
-    alpha,
-    N_indiv,
-    simulation_days,
-    dt,
-    I0,
-    sus_mean,
-    sus_std,
-    vaccine_mode,
-    vaccine_factor,
-    fraction_weakest,
-)
+    return (S, I, R, D)
