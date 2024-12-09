@@ -26,7 +26,7 @@ parameters = [
 S, I, R, D = run_simulation(*parameters)
 
 
-days = np.linspace(0, simulation_days, num=S.size)
+days = np.linspace(0, parameters[5], num=S.size)
 plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
 plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
 plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
