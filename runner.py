@@ -95,8 +95,8 @@ for lockdown_time in lockdown_times:
 """
 # loop over both lockdown times and vaccination times
 runs = 5
-lockdown_times = np.round(np.linspace(0, 1, num=3), decimals=5)
-vaccination_times = np.round(np.linspace(0, 1, num=3), decimals=5)
+lockdown_times = np.round(np.linspace(0, 1, num=runs), decimals=2)
+vaccination_times = np.round(np.linspace(0, 1, num=runs), decimals=2)
 
 for lockdown_time in lockdown_times:
     for vaccination_time in vaccination_times:
