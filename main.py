@@ -72,23 +72,7 @@ def walls(nx, ny, min_x, min_y, max_x, max_y):
     return nx, ny
 
 
-def run_simulation(
-    beta,
-    gamma,
-    theta,
-    alpha,
-    N_indiv,
-    simulation_days,
-    dt,
-    I0,
-    sus_mean,
-    sus_std,
-    vaccine_mode,
-    vaccine_factor,
-    vaccine_time,
-    fraction_weakest,
-    silent_mode=True,
-):
+def run_simulation(parameters):
     """
     Main function for running the simulation.
     Return the S,I,R values as numpy vectors, with time step dt over simulation_days
@@ -108,6 +92,26 @@ def run_simulation(
 
     silent_mode - if true, run without showing simulation
     """
+    beta = parameters["beta"]
+    gamma = parameters["gamma"]
+    theta = parameters["theta"]
+    alpha = parameters["alpha"]
+    N_indiv = parameters["N_indiv"]
+    simulation_days = parameters["simulation_days"]
+    dt = parameters["dt"]
+    I0 = parameters["I0"]
+    sus_mean = parameters["sus_mean"]
+    sus_std = parameters["sus_std"]
+    vaccine_mode = parameters["vaccine_mode"]
+    vaccine_factor = parameters["vaccine_factor"]
+    vaccine_time = parameters["vaccine_time"]
+    fraction_weakest = parameters["fraction_weakest"]
+
+    if "silent_mode" in parameters:
+        silent_mode = parameters["silent_mode"]
+    else:
+        silent_mode = True
+
     day_steps = int(1 / dt)  # steps per day (used in for-loop)
 
     # adjust parameters for dt

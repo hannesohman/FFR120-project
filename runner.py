@@ -25,22 +25,22 @@ import matplotlib.pyplot as plt
 # 12 - vaccine_time
 # 13 - fraction_weakest
 # 14 - (optional) silent mode (BOOL)
-parameters = [
-    1 / 1.8,
-    1 / 14,
-    0.0001,
-    1 / 25,
-    2000,
-    300,
-    0.1,
-    2,
-    1,
-    0.2,
-    "risk group",
-    0.2,
-    0.3,
-    0.5,
-]
+parameters = {
+    "beta": 1 / 1.8,
+    "gamma": 1 / 14,
+    "theta": 0.0001,
+    "alpha": 1 / 25,
+    "N_indiv": 2000,
+    "simulation_days": 300,
+    "dt": 0.1,
+    "I0": 2,
+    "sus_mean": 1,
+    "sus_std": 0.2,
+    "vaccine_mode": "risk group",
+    "vaccine_factor": 0.2,
+    "vaccine_time": 0.3,
+    "fraction_weakest": 0.5,
+}
 
 
 S, I, R, D = run_simulation(*parameters)
