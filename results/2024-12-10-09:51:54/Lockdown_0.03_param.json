@@ -1,0 +1,1 @@
+{"beta": 0.6666666666666666, "gamma": 0.07142857142857142, "theta": 0.0001, "alpha": 0.04, "N_indiv": 2000, "simulation_days": 300, "dt": 0.1, "I0": 10, "sus_mean": 1, "sus_std": 0.2, "vaccine_mode": "risk group", "vaccine_factor": 0.2, "vaccine_time": 1, "fraction_weakest": 0.5, "lockdown_time": 0.03, "silent_mode": true}

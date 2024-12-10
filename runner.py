@@ -48,6 +48,7 @@ def save_results(result, parameters, foldername, filename):
     plt.title(title)
 
     plt.savefig(f"./results/{foldername}/{filename}_plot.png")
+    print(f"Saved ./results/{foldername}/{filename}_plot.png")
     plt.clf()
     plt.close()
 
@@ -71,10 +72,12 @@ parameters = {
     "silent_mode": True,
 }
 
-foldername = time.strftime("%Y-%m-%d_%H:%M:%S")
+foldername = time.strftime("%Y-%m-%d-%H:%M:%S")
 max_infection_rate = 0.1
 runs = 4
-# # loop over multiple vaccination times, no lockdown
+
+
+# loop over multiple vaccination times, no lockdown
 vaccination_times = np.linspace(0, max_infection_rate, num=runs)
 vaccination_times = np.round(vaccination_times, decimals=2)  # round for cleanliness
 for vaccination_time in vaccination_times:
@@ -92,7 +95,7 @@ lockdown_times = np.linspace(0, max_infection_rate, num=runs)
 lockdown_times = np.round(lockdown_times, decimals=2)  # round for cleanliness
 for lockdown_time in lockdown_times:
     parameters["lockdown_time"] = lockdown_time
-    parameters["vaccination_time"] = 1
+    parameters["vaccine_time"] = 1
     filename = f"Lockdown_{lockdown_time}"
 
     result = run_simulation(parameters)
