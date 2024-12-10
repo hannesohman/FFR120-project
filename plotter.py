@@ -47,11 +47,13 @@ parameters, results = load_data("2024-12-10-11.26.09")
 
 # create a plot of infected individuals depending on when vaccination or lockdown was introduced
 plotted_vaccine = False
+
 plotted_lockdown = False
 plotted_normal = False
 
+threshold = 0.1
 for parameter, result in zip(parameters, results):
-    if parameter["vaccine_time"] == 0.03 and parameter["lockdown_time"] == 1:
+    if parameter["vaccine_time"] == threshold and parameter["lockdown_time"] == 1:
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
 
@@ -59,7 +61,7 @@ for parameter, result in zip(parameters, results):
         plt.plot(days, I, label=label, color="orange")
         plotted_vaccine = True
 
-    elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 0.03:
+    elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == threshold:
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
 
