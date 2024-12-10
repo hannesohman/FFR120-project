@@ -74,33 +74,35 @@ parameters = {
 
 foldername = time.strftime("%Y-%m-%d-%H:%M:%S")
 max_infection_rate = 0.1
-runs = 4
+repeats = 4
 
 
 # loop over multiple vaccination times, no lockdown
-vaccination_times = np.linspace(0, max_infection_rate, num=runs)
-vaccination_times = np.round(vaccination_times, decimals=2)  # round for cleanliness
 
+vaccination_times = [0.03, 0.05, 0.1]
 for vaccination_time in vaccination_times:
-    parameters["vaccine_time"] = vaccination_time
-    parameters["lockdown_time"] = 1
-    filename = f"Vaccination_{vaccination_time}"
+    for i in range(repeats):
+        parameters["vaccine_time"] = vaccination_time
+        parameters["lockdown_time"] = 1
+        filename = f"Vaccination_{vaccination_time}_{i+1}"
 
-    result = run_simulation(parameters)
-    save_results(result, parameters, foldername, filename)
+        result = run_simulation(parameters)
+        save_results(result, parameters, foldername, filename)
 
 
 # loop over multiple lockdown times (fixed vaccination time at )
 
+lockdown_times = vaccination_times
 lockdown_times = np.linspace(0, max_infection_rate, num=runs)
 lockdown_times = np.round(lockdown_times, decimals=2)  # round for cleanliness
 for lockdown_time in lockdown_times:
-    parameters["lockdown_time"] = lockdown_time
-    parameters["vaccine_time"] = 1
-    filename = f"Lockdown_{lockdown_time}"
+    for i in range(repeats):
+        parameters["lockdown_time"] = lockdown_time
+        parameters["vaccine_time"] = 1
+        filename = f"Lockdown_{lockdown_time}_{i+1}"
 
-    result = run_simulation(parameters)
-    save_results(result, parameters, foldername, filename)
+        result = run_simulation(parameters)
+        save_results(result, parameters, foldername, filename)
 
 # loop over both lockdown times and vaccination times
 
