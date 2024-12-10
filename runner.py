@@ -76,11 +76,6 @@ foldername = time.strftime("%Y-%m-%d-%H:%M:%S")
 max_infection_rate = 0.1
 runs = 4
 
-filename = "no_vacc_lockdown"
-result = run_simulation(parameters)
-save_results(result, parameters, foldername, filename)
-raise ValueError
-
 
 # loop over multiple vaccination times, no lockdown
 vaccination_times = np.linspace(0, max_infection_rate, num=runs)
