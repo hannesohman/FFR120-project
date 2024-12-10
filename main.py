@@ -151,11 +151,11 @@ def run_simulation(parameters):
 
     # positioner och gränser för platser på campus, sista siffran är en ratio med hur många av befolkningen som har det som sin "home_base"
     location_info = {
-        "kårhuset": [(0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h)   , 4],
-        "vasa": [(0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h)       , 10],
-        "mc2": [(0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h)        , 3],
-        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h) , 7],
-        "kemihuset": [(0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h)  , 8],
+        "kårhuset": [(0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h), 4],
+        "vasa": [(0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h), 10],
+        "mc2": [(0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h), 3],
+        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h), 7],
+        "kemihuset": [(0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h), 8],
         "biblioteket": [(0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h), 2],
         "mattehuset": [(0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h), 2],
         "HA": [(0.27 * g_w, 0.76 * g_h, 0.35 * g_w, 0.81 * g_h), 3],
@@ -193,8 +193,8 @@ def run_simulation(parameters):
     # higher suseptibility -> higher risk of being infected
     susceptibility[susceptibility < 1] = 1
 
-    individuals_dots = []
     if not silent_mode:
+        individuals_dots = []
         for id in range(N_indiv):
             if status[id] == 0:
                 agent_color = "#1f77b4"
@@ -289,27 +289,27 @@ def run_simulation(parameters):
             status = spread(nx, ny, status, beta, susceptibility)
             status = recover_die(status, gamma, theta, N_indiv)
             status = reset(status, alpha, N_indiv)
+            if not silent_mode:
+                for id, indiv in enumerate(
+                    individuals_dots
+                ):  # Rita deras nya position på grafiken
+                    if status[id] == 0:
+                        agent_color = "#1f77b4"
+                    elif status[id] == 1:
+                        agent_color = "#d62728"
+                    elif status[id] == 2:
+                        agent_color = "#2ca02c"
+                    elif status[id] == 3:
+                        agent_color = "#bbbbbb"
 
-            for id, indiv in enumerate(
-                individuals_dots
-            ):  # Rita deras nya position på grafiken
-                if status[id] == 0:
-                    agent_color = "#1f77b4"
-                elif status[id] == 1:
-                    agent_color = "#d62728"
-                elif status[id] == 2:
-                    agent_color = "#2ca02c"
-                elif status[id] == 3:
-                    agent_color = "#bbbbbb"
-
-                canvas.coords(
-                    indiv,
-                    nx[id][0] * ratio - 2,
-                    ny[id][0] * ratio - 2,
-                    nx[id][0] * ratio + 2,
-                    ny[id][0] * ratio + 2,
-                )
-                canvas.itemconfig(indiv, fill=agent_color)
+                    canvas.coords(
+                        indiv,
+                        nx[id][0] * ratio - 2,
+                        ny[id][0] * ratio - 2,
+                        nx[id][0] * ratio + 2,
+                        ny[id][0] * ratio + 2,
+                    )
+                    canvas.itemconfig(indiv, fill=agent_color)
 
             x = nx
             y = ny

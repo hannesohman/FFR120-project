@@ -57,7 +57,7 @@ for parameter, result in zip(parameters, results):
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
 
-        label = None if plotted_vaccine else f"Vaccination at 0.03"
+        label = None if plotted_vaccine else f"Vaccination at {threshold}"
         plt.plot(days, I, label=label, color="orange")
         plotted_vaccine = True
 
@@ -65,7 +65,7 @@ for parameter, result in zip(parameters, results):
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
 
-        label = None if plotted_lockdown else f"Lockdown at 0.03"
+        label = None if plotted_lockdown else f"Lockdown at {threshold}"
         plt.plot(days, I, label=label, color="blue")
         plotted_lockdown = True
 

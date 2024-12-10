@@ -79,6 +79,8 @@ repeats = 4
 # loop over multiple vaccination times, no lockdown
 
 vaccination_times = [0.2, 0.3]
+vaccination_times = [0.2]
+
 for vaccination_time in vaccination_times:
     for i in range(repeats):
         parameters["vaccine_time"] = vaccination_time
@@ -92,6 +94,8 @@ for vaccination_time in vaccination_times:
 # loop over multiple lockdown times (fixed vaccination time at )
 
 lockdown_times = vaccination_times
+lockdown_times = []
+
 for lockdown_time in lockdown_times:
     for i in range(repeats):
         parameters["lockdown_time"] = lockdown_time
