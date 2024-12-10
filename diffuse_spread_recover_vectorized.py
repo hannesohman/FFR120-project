@@ -144,9 +144,9 @@ def vaccinate(
         sorted_suscep = np.sort(susceptibility, axis=0)
         index_cut = int(len(sorted_suscep) * fraction_weakest)
         weak_limit = sorted_suscep[index_cut]
-        print(f"mean suseptibility before: {np.mean(susceptibility)}")
+        # print(f"mean suseptibility before: {np.mean(susceptibility)}")
         susceptibility[susceptibility > weak_limit] *= vaccine_factor
-        print(f"mean suseptibility after: {np.mean(susceptibility)}")
+        # print(f"mean suseptibility after: {np.mean(susceptibility)}")
     return susceptibility
 
 

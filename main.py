@@ -323,7 +323,7 @@ def run_simulation(parameters):
                 # )
             if print_progress:
                 total_steps = simulation_days * day_steps
-                print_interval = 200
+                print_interval = 60
 
                 if global_steps % int(total_steps / print_interval) == 0:
                     percent_done = round(100 * global_steps / total_steps, 2)

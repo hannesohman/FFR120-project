@@ -78,8 +78,7 @@ repeats = 4
 
 # loop over multiple vaccination times, no lockdown
 
-vaccination_times = [0.2, 0.3]
-vaccination_times = [0.2]
+vaccination_times = [0.1, 0.15, 0.2, 0.25, 0.3, 1]
 
 for vaccination_time in vaccination_times:
     for i in range(repeats):
