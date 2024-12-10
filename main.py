@@ -147,7 +147,7 @@ def run_simulation(parameters):
         "kårhuset": [(0.29 * g_w, 0.04 * g_h, 0.44 * g_w, 0.21 * g_h)   , 4],
         "vasa": [(0.83 * g_w, 0.57 * g_h, 0.99 * g_w, 0.81 * g_h)       , 10],
         "mc2": [(0.60 * g_w, 0.39 * g_h, 0.69 * g_w, 0.54 * g_h)        , 3],
-        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h) , 8],
+        "fysikhuset": [(0.45 * g_w, 0.42 * g_h, 0.56 * g_w, 0.54 * g_h) , 7],
         "kemihuset": [(0.50 * g_w, 0.62 * g_h, 0.58 * g_w, 0.93 * g_h)  , 8],
         "biblioteket": [(0.39 * g_w, 0.83 * g_h, 0.48 * g_w, 0.94 * g_h), 2],
         "mattehuset": [(0.39 * g_w, 0.58 * g_h, 0.46 * g_w, 0.74 * g_h) , 2],
@@ -171,7 +171,6 @@ def run_simulation(parameters):
     home_weights = [p / sum(home_weights) for p in home_weights]
 
     home_base = np.random.choice(list(location_info.keys()), (N_indiv, 1), p=home_weights)
-    print(home_base)
 
     min_x, min_y, max_x, max_y = get_min_max(home_base, location_info)
 
