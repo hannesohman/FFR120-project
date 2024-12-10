@@ -72,14 +72,14 @@ parameters = {
     "silent_mode": True,
 }
 
-foldername = time.strftime("%Y-%m-%d-%H:%M:%S")
+foldername = time.strftime("%Y-%m-%d-%H.%M.%S")
 max_infection_rate = 0.1
 repeats = 4
 
 
 # loop over multiple vaccination times, no lockdown
 
-vaccination_times = [0.03, 0.05, 0.1]
+vaccination_times = [0.03, 0.1, 1]
 for vaccination_time in vaccination_times:
     for i in range(repeats):
         parameters["vaccine_time"] = vaccination_time
@@ -92,7 +92,7 @@ for vaccination_time in vaccination_times:
 
 # loop over multiple lockdown times (fixed vaccination time at )
 
-lockdown_times = vaccination_times
+lockdown_times = [0.03, 0.1]
 lockdown_times = np.linspace(0, max_infection_rate, num=runs)
 lockdown_times = np.round(lockdown_times, decimals=2)  # round for cleanliness
 for lockdown_time in lockdown_times:
