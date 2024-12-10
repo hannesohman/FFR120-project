@@ -71,7 +71,7 @@ parameters = {
     "silent_mode": True,
 }
 
-foldername = time.strftime("%Y-%m-%d_%H_%M_%S")
+foldername = time.strftime("%Y-%m-%d_%H:%M:%S")
 max_infection_rate = 0.1
 runs = 4
 # # loop over multiple vaccination times, no lockdown
