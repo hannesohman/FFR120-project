@@ -46,25 +46,30 @@ def load_data(foldername):
 parameters, results = load_data("poster")
 
 # create a plot of infected individuals depending on when vaccination or lockdown was introduced
+plotted_vaccine = False
+plotted_lockdown = False
+plotted_normal = False
 
 for parameter, result in zip(parameters, results):
     if parameter["vaccine_time"] == 0.03 and parameter["lockdown_time"] == 1:
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
-        label = f"Vaccination at 0.03"
+
+        label = None if plotted_vaccine else f"Vaccination at 0.03"
         plt.plot(days, I, label=label, color="orange")
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 0.03:
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
-        label = f"Lockdown at 0.03"
+
+        label = None if plotted_lockdown else f"Lockdown at 0.03"
         plt.plot(days, I, label=label, color="blue")
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 1:
         S, I, R, D = result
-
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
-        label = f"No vaccination or lockdown"
+
+        label = None if plotted_normal else f"No vaccination or lockdown"
         plt.plot(days, I, label=label, color="green")
 
 plt.legend()
