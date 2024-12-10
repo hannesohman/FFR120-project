@@ -73,7 +73,6 @@ parameters = {
 }
 
 foldername = time.strftime("%Y-%m-%d-%H.%M.%S")
-max_infection_rate = 0.1
 repeats = 4
 
 
