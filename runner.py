@@ -66,7 +66,7 @@ parameters = {
     "sus_std": 0.2,
     "vaccine_mode": "risk group",
     "vaccine_factor": 0.2,
-    "vaccine_time": 0.1,  # fraction of infected population before vaccination
+    "vaccine_time": 1,  # fraction of infected population before vaccination
     "fraction_weakest": 0.5,
     "lockdown_time": 1,
     "silent_mode": True,
@@ -76,10 +76,16 @@ foldername = time.strftime("%Y-%m-%d-%H:%M:%S")
 max_infection_rate = 0.1
 runs = 4
 
+filename = "no_vacc_lockdown"
+result = run_simulation(parameters)
+save_results(result, parameters, foldername, filename)
+raise ValueError
+
 
 # loop over multiple vaccination times, no lockdown
 vaccination_times = np.linspace(0, max_infection_rate, num=runs)
 vaccination_times = np.round(vaccination_times, decimals=2)  # round for cleanliness
+
 for vaccination_time in vaccination_times:
     parameters["vaccine_time"] = vaccination_time
     parameters["lockdown_time"] = 1
