@@ -113,18 +113,6 @@ def spread(x, y, status, beta, susceptibility):
         # skapa en mask för agenter som befinner sig på en infekterad position
         concerned_agent_mask = np.isin(raveled_pos, raveled_infected_pos)
         concerned_agent_mask = concerned_agent_mask[:, np.newaxis]
-
-    # infected = np.where(status == 1)[0]
-    # for i in infected:
-    #     # Check whether other particles share the same position.
-
-    #     same_x = np.where(x == x[i])
-    #     same_y = np.where(y == y[i])
-    #     same_cell = np.intersect1d(same_x, same_y)
-    #     for j in same_cell:
-    #         if status[j] == 0:
-    #             if np.random.rand() < beta * susceptibility[j]:
-    #                 status[j] = 1
     return status
 
 
