@@ -61,18 +61,70 @@ def diffuse_spread_recover(x, y, status, d, beta, gamma, L, alpha):
 
 
 def spread(x, y, status, beta, susceptibility):
-    infected = np.where(status == 1)[0]
+    # hitta alla (unika) positioner med infekterade
+    all_infected_pos = np.array([x[status == 1], y[status == 1]]).T
+    infected_positions, infected_counts = np.unique(
+        all_infected_pos, axis=0, return_counts=True
+    )
+    infected_counts = np.array(infected_counts)
 
-    for i in infected:
-        # Check whether other particles share the same position.
+    # hitta alla agenter (index) som befinner sig på en infekterad position
+    # konvertera alla positioner (x,y) till EN siffra (y*y_max + x) typ
+    coord_shape = (np.max(x).astype(np.int64) + 1, np.max(y).astype(np.int64) + 1)
+    infected_positions = (
+        infected_positions[:, 0].astype(np.int64),
+        infected_positions[:, 1].astype(np.int64),
+    )
+    positions = (x.astype(np.int64), y.astype(np.int64))
 
-        same_x = np.where(x == x[i])
-        same_y = np.where(y == y[i])
-        same_cell = np.intersect1d(same_x, same_y)
-        for j in same_cell:
-            if status[j] == 0:
-                if np.random.rand() < beta * susceptibility[j]:
-                    status[j] = 1
+    raveled_infected_pos = np.ravel_multi_index(infected_positions, coord_shape)
+    raveled_pos = np.ravel_multi_index(positions, coord_shape).flatten()
+
+    # skapa en mask för agenter som befinner sig på en infekterad position
+    concerned_agent_mask = np.isin(raveled_pos, raveled_infected_pos)
+    concerned_agent_mask = concerned_agent_mask[:, np.newaxis]
+
+    # nu: dessa concerned agent indicies ska bli infekterade kanske.
+    # först: börjar med en naiv implementation som loopar över alla dessa concerned agenter.
+
+    # medans det fortfarande finns infekterade kvar som har en risk att smitta,
+    # smitta vidare.
+    while np.size(infected_counts) >= 1:
+        N_indiv = np.size(status)
+        successful_infection = np.asarray(
+            np.random.rand(N_indiv, 1) < beta * susceptibility
+        )
+        # all suseptible with successful infections get infected
+        status[(status == 0) & successful_infection & concerned_agent_mask] = 1
+
+        # now, remove one agent from every place (they have had the chance to infect)
+        # and retry again
+        infected_counts -= 1
+        infected_x = infected_positions[0][infected_counts != 0]
+        infected_y = infected_positions[1][infected_counts != 0]
+        infected_positions = (infected_x, infected_y)
+
+        infected_counts = infected_counts[infected_counts != 0]
+
+        # update which agents are exposed
+        raveled_infected_pos = np.ravel_multi_index(infected_positions, coord_shape)
+        raveled_pos = np.ravel_multi_index(positions, coord_shape).flatten()
+
+        # skapa en mask för agenter som befinner sig på en infekterad position
+        concerned_agent_mask = np.isin(raveled_pos, raveled_infected_pos)
+        concerned_agent_mask = concerned_agent_mask[:, np.newaxis]
+
+    # infected = np.where(status == 1)[0]
+    # for i in infected:
+    #     # Check whether other particles share the same position.
+
+    #     same_x = np.where(x == x[i])
+    #     same_y = np.where(y == y[i])
+    #     same_cell = np.intersect1d(same_x, same_y)
+    #     for j in same_cell:
+    #         if status[j] == 0:
+    #             if np.random.rand() < beta * susceptibility[j]:
+    #                 status[j] = 1
     return status
 
 
