@@ -44,6 +44,9 @@ def save_results(result, parameters, foldername, filename):
     plt.xlabel("Time (days)")
     plt.ylabel("Individuals")
 
+    title = f'Lockdown at {parameters["lockdown_time"]}, vaccination at {parameters["vaccine_time"]}'
+    plt.title(title)
+
     plt.savefig(f"./results/{foldername}/{filename}_plot.png")
     plt.clf()
     plt.close()
@@ -69,9 +72,10 @@ parameters = {
 }
 
 foldername = time.strftime("%Y-%m-%d_%H_%M_%S")
-"""
-# loop over multiple vaccination times, no lockdown
-vaccination_times = np.linspace(0, 1, num=3)
+max_infection_rate = 0.1
+runs = 4
+# # loop over multiple vaccination times, no lockdown
+vaccination_times = np.linspace(0, max_infection_rate, num=runs)
 vaccination_times = np.round(vaccination_times, decimals=2)  # round for cleanliness
 for vaccination_time in vaccination_times:
     parameters["vaccine_time"] = vaccination_time
@@ -81,8 +85,10 @@ for vaccination_time in vaccination_times:
     result = run_simulation(parameters)
     save_results(result, parameters, foldername, filename)
 
+
 # loop over multiple lockdown times (fixed vaccination time at )
-lockdown_times = np.linspace(0, 1, num=3)
+
+lockdown_times = np.linspace(0, max_infection_rate, num=runs)
 lockdown_times = np.round(lockdown_times, decimals=2)  # round for cleanliness
 for lockdown_time in lockdown_times:
     parameters["lockdown_time"] = lockdown_time
@@ -92,19 +98,20 @@ for lockdown_time in lockdown_times:
     result = run_simulation(parameters)
     save_results(result, parameters, foldername, filename)
 
-"""
 # loop over both lockdown times and vaccination times
-runs = 5
-lockdown_times = np.round(np.linspace(0, 1, num=runs), decimals=2)
-vaccination_times = np.round(np.linspace(0, 1, num=runs), decimals=2)
 
-for lockdown_time in lockdown_times:
-    for vaccination_time in vaccination_times:
-        parameters["lockdown_time"] = lockdown_time
-        parameters["vaccination_time"] = vaccination_time
-        filename = f"Lock_{lockdown_time}_vacc_{vaccination_time}"
-        result = run_simulation(parameters)
-        save_results(result, parameters, foldername, filename)
-        print(
-            f"Lockdown time {lockdown_time}, vaccination time {vaccination_time} complete"
-        )
+# runs = 4
+
+# lockdown_times = np.round(np.linspace(0, max_infections, num=runs), decimals=2)
+# vaccination_times = np.round(np.linspace(0, max_infections, num=runs), decimals=2)
+
+# for lockdown_time in lockdown_times:
+#     for vaccination_time in vaccination_times:
+#         parameters["lockdown_time"] = lockdown_time
+#         parameters["vaccination_time"] = vaccination_time
+#         filename = f"Lock_{lockdown_time}_vacc_{vaccination_time}"
+#         result = run_simulation(parameters)
+#         save_results(result, parameters, foldername, filename)
+#         print(
+#             f"Lockdown time {lockdown_time}, vaccination time {vaccination_time} complete"
+#         )
