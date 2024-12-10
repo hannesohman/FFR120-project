@@ -24,6 +24,10 @@ def load_data(foldername):
         data_path + filename for filename in filenames if "result.txt" in filename
     ]
 
+    # sort so that they appear in same order
+    parameter_filepaths = sorted(parameter_filepaths)
+    result_filepaths = sorted(result_filepaths)
+
     # convert into their respective data types
     parameters = []
     for parameter_filepath in parameter_filepaths:
@@ -39,7 +43,7 @@ def load_data(foldername):
     return parameters, results
 
 
-parameters, results = load_data("temp")
+parameters, results = load_data("poster")
 
 # create a plot of infected individuals depending on when vaccination or lockdown was introduced
 
@@ -48,20 +52,24 @@ for parameter, result in zip(parameters, results):
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
         label = f"Vaccination at 0.03"
-        plt.plot(days, I, label=label)
+        plt.plot(days, I, label=label, color="orange")
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 0.03:
         S, I, R, D = result
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
         label = f"Lockdown at 0.03"
-        plt.plot(days, I, label=label)
+        plt.plot(days, I, label=label, color="blue")
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 1:
         S, I, R, D = result
 
         days = np.linspace(0, parameter["simulation_days"], num=I.size)
         label = f"No vaccination or lockdown"
-        plt.plot(days, I, label=label)
+        plt.plot(days, I, label=label, color="green")
 
 plt.legend()
+plt.xlabel("Time (days)")
+plt.ylabel("Infected individuals")
+plt.title("Infected individuals")
+
 plt.show()
