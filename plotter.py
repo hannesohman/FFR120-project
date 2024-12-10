@@ -43,7 +43,7 @@ def load_data(foldername):
     return parameters, results
 
 
-parameters, results = load_data("poster")
+parameters, results = load_data("2024-12-10-11.26.09")
 
 # create a plot of infected individuals depending on when vaccination or lockdown was introduced
 plotted_vaccine = False
@@ -57,6 +57,7 @@ for parameter, result in zip(parameters, results):
 
         label = None if plotted_vaccine else f"Vaccination at 0.03"
         plt.plot(days, I, label=label, color="orange")
+        plotted_vaccine = True
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 0.03:
         S, I, R, D = result
@@ -64,6 +65,7 @@ for parameter, result in zip(parameters, results):
 
         label = None if plotted_lockdown else f"Lockdown at 0.03"
         plt.plot(days, I, label=label, color="blue")
+        plotted_lockdown = True
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 1:
         S, I, R, D = result
@@ -71,6 +73,7 @@ for parameter, result in zip(parameters, results):
 
         label = None if plotted_normal else f"No vaccination or lockdown"
         plt.plot(days, I, label=label, color="green")
+        plotted_normal = True
 
 plt.legend()
 plt.xlabel("Time (days)")
