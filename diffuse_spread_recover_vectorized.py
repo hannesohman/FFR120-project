@@ -84,12 +84,10 @@ def spread(x, y, status, beta, susceptibility):
     concerned_agent_mask = np.isin(raveled_pos, raveled_infected_pos)
     concerned_agent_mask = concerned_agent_mask[:, np.newaxis]
 
-    # nu: dessa concerned agent indicies ska bli infekterade kanske.
-    # först: börjar med en naiv implementation som loopar över alla dessa concerned agenter.
-
     # medans det fortfarande finns infekterade kvar som har en risk att smitta,
     # smitta vidare.
-    while np.size(infected_counts) >= 1:
+
+    while np.size(infected_positions) >= 1:
         N_indiv = np.size(status)
         successful_infection = np.asarray(
             np.random.rand(N_indiv, 1) < beta * susceptibility
