@@ -90,10 +90,8 @@ for vaccination_time in vaccination_times:
         save_results(result, parameters, foldername, filename)
 
 
-# loop over multiple lockdown times (fixed vaccination time at )
-
-lockdown_times = vaccination_times
-lockdown_times = []
+# loop over multiple lockdown times no vaccination
+lockdown_times = [val for val in vaccination_times if val != 1]
 
 for lockdown_time in lockdown_times:
     for i in range(repeats):
