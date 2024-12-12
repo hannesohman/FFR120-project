@@ -88,9 +88,9 @@ def run_simulation(parameters):
     sus_std - suseptibility standard deviation
     vaccine_mode - how the vaccination is performed
     vaccine_factor - factor by which the vaccination decreases sus
-    fraction_weakset - ???
+    fraction_to_vaccinate - ???
 
-    silent_mode - if true, run without showing simulation
+    display_graphics - if true, run without showing simulation
     """
     beta = parameters["beta"]
     gamma = parameters["gamma"]
@@ -104,13 +104,14 @@ def run_simulation(parameters):
     sus_std = parameters["sus_std"]
     vaccine_mode = parameters["vaccine_mode"]
     vaccine_factor = parameters["vaccine_factor"]
-    vaccine_time = parameters["vaccine_time"]
-    fraction_weakest = parameters["fraction_weakest"]
+    vaccine_alert = parameters["vaccine_alert"]
+    fraction_to_vaccinate = parameters["fraction_to_vaccinate"]
 
-    if "silent_mode" in parameters:
-        silent_mode = parameters["silent_mode"]
+    if "display_graphics" in parameters:
+        display_graphics = parameters["display_graphics"]
     else:
-        silent_mode = True
+        display_graphics = True
+
     if "lockdown_time" in parameters:
         lockdown_time = parameters["lockdown_time"]
     else:
@@ -120,6 +121,14 @@ def run_simulation(parameters):
         lockdown_time = 1
 
     day_steps = int(1 / dt)  # steps per day (used in for-loop)
+
+    global_steps = 0
+    total_steps = simulation_days * day_steps 
+    
+    print_progress = False
+    print_data = True
+    print_interval = 50
+
 
     # adjust parameters for dt
     beta *= dt
@@ -140,7 +149,7 @@ def run_simulation(parameters):
     )
     vaccination_time = None
 
-    if not silent_mode:
+    if display_graphics:
         tk = Tk()
         tk.geometry(f"{g_w*ratio}x{g_h*ratio}")
         tk.configure(background="#000000")
@@ -166,7 +175,7 @@ def run_simulation(parameters):
         "SB-huset": [(0.06 * g_w, 0.21 * g_h, 0.21 * g_w, 0.36 * g_h), 12],
     }
 
-    if not silent_mode:
+    if display_graphics:
         # Följande ritar upp rektanglar för områdena.
         for key, val in location_info.items():
             coords = [c * ratio for c in val[0]]
@@ -193,7 +202,7 @@ def run_simulation(parameters):
     # higher suseptibility -> higher risk of being infected
     susceptibility[susceptibility < 1] = 1
 
-    if not silent_mode:
+    if display_graphics:
         individuals_dots = []
         for id in range(N_indiv):
             if status[id] == 0:
@@ -225,13 +234,7 @@ def run_simulation(parameters):
     R = []
     D = []
 
-    running = True
-
-    global_steps = 0
-
     vaccination = False
-
-    print_progress = True
 
     for day in range(simulation_days):
         # step = 0
@@ -269,18 +272,20 @@ def run_simulation(parameters):
                 x, y = random_location_coords(location, location_info)
                 min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
-            if I[-1] > vaccine_time * N_indiv and not vaccination:
-                # print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
+            
+            slope = calc_infected_slope(I, int(5/dt))/dt
+            if slope > vaccine_alert and not vaccination:
+                print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
                 # "all even" , "all random" , "risk group"
                 susceptibility = vaccinate(
                     susceptibility,
                     N_indiv,
                     mode=vaccine_mode,
                     vaccine_factor=vaccine_factor,
-                    fraction_weakest=fraction_weakest,
+                    fraction_to_vaccinate=fraction_to_vaccinate,
                 )
                 vaccination = True
-                vaccination_time = global_steps
+                vaccination_time = global_steps*dt
 
             nx, ny = move(x, y, d, status)  # Flytta inddividerna
 
@@ -289,7 +294,7 @@ def run_simulation(parameters):
             status = spread(nx, ny, status, beta, susceptibility)
             status = recover_die(status, gamma, theta, N_indiv)
             status = reset(status, alpha, N_indiv)
-            if not silent_mode:
+            if display_graphics:
                 for id, indiv in enumerate(
                     individuals_dots
                 ):  # Rita deras nya position på grafiken
@@ -314,20 +319,22 @@ def run_simulation(parameters):
             x = nx
             y = ny
 
-            if not silent_mode:
+            if display_graphics:
                 tk.update_idletasks()
                 tk.update()
                 time.sleep(0.0000001)
-                # print(
-                #    f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} |"
-                # )
-            if print_progress:
-                total_steps = simulation_days * day_steps
-                print_interval = 60
 
+            if print_data:
+                if global_steps % int(total_steps / print_interval) == 0:
+                    percent_done = round(100 * global_steps / total_steps, 2)
+                    print(f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} | Slope: {slope:.3f}")
+                
+
+            if print_progress:
                 if global_steps % int(total_steps / print_interval) == 0:
                     percent_done = round(100 * global_steps / total_steps, 2)
                     print(f"simulating... {percent_done}", end="\r")
+            
             global_steps += 1
 
             if I[-1] == 0:  # or step == 600:
@@ -338,7 +345,8 @@ def run_simulation(parameters):
             break
             # step += 1
 
-    if not silent_mode:
+
+    if display_graphics:
         tk.update_idletasks()
         tk.update()
         tk.mainloop()
@@ -346,8 +354,9 @@ def run_simulation(parameters):
     I = np.array(I)
     R = np.array(R)
     D = np.array(D)
+    
 
-    return np.array([S, I, R, D])
+    return np.array([S, I, R, D]), vaccination_time
 
 
 if __name__ == "__main__":
@@ -364,9 +373,26 @@ if __name__ == "__main__":
         "sus_std": 0.2,
         "vaccine_mode": "risk group",
         "vaccine_factor": 0.2,
-        "vaccine_time": 0.3,
-        "fraction_weakest": 0.5,
-        "silent_mode": False,
+        "vaccine_alert": 20,
+        "fraction_to_vaccinate": 0.5,
+        "display_graphics": False,
     }
 
-    run_simulation(parameters)
+    result, vaccination_time = run_simulation(parameters)
+
+
+    S = result[0]
+    I = result[1]
+    R = result[2]
+    D = result[3]
+    days = np.linspace(0, parameters["simulation_days"], num=S.size)
+    plt.figure("Test Run")
+    plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
+    plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
+    plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
+    if vaccination_time is not None:
+        plt.axvline(x=vaccination_time, color='black', ls="--")
+    plt.legend()
+    plt.xlabel("Time (days)")
+    plt.ylabel("Individuals")
+    plt.show()

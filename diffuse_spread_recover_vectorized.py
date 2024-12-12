@@ -130,19 +130,17 @@ def reset(status, alpha, N_indiv):
 
 
 def vaccinate(
-    susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_weakest=0.5
+    susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_to_vaccinate=0.5
 ):
     if mode == "all even":
         susceptibility *= vaccine_factor
     elif mode == "random":
-        draws = np.random.uniform(N_indiv)
-        # using fraction_weakest to mean percentage to vaccinate
-        # TODO change name of fraction_weakest to fraction_vaccinated
-        susceptibility[draws < fraction_weakest] *= vaccine_factor
+        index = np.random.permutation(N_indiv)[:int(fraction_to_vaccinate*N_indiv)]
+        susceptibility[index] *= vaccine_factor
 
     elif mode == "risk group":
         sorted_suscep = np.sort(susceptibility, axis=0)
-        index_cut = int(len(sorted_suscep) * fraction_weakest)
+        index_cut = int(len(sorted_suscep) * fraction_to_vaccinate)
         weak_limit = sorted_suscep[index_cut]
         # print(f"mean suseptibility before: {np.mean(susceptibility)}")
         susceptibility[susceptibility > weak_limit] *= vaccine_factor
@@ -158,3 +156,17 @@ def switch_location(location, schedule, p_schedule, location_info, N_indiv):
 
     location = np.random.choice(list(location_info.keys()), (N_indiv, 1), p=p_weights)
     return location
+
+
+def calc_infected_slope(I, latest_consider):
+    if len(I) > 1:
+        if latest_consider > len(I):
+            grad = np.gradient(I)
+        else:
+            grad = np.gradient(I[-latest_consider:])
+
+        mean_slope = np.mean(grad)
+        # print(mean_slope)
+        return mean_slope
+    else:
+        return 0

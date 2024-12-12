@@ -86,7 +86,7 @@ for vaccination_time in vaccination_times:
         parameters["lockdown_time"] = 1
         filename = f"Vaccination_{vaccination_time}_{i+1}"
 
-        result = run_simulation(parameters)
+        result, vaccination_time = run_simulation(parameters)
         save_results(result, parameters, foldername, filename)
 
 
@@ -101,7 +101,7 @@ for lockdown_time in lockdown_times:
         parameters["vaccine_time"] = 1
         filename = f"Lockdown_{lockdown_time}_{i+1}"
 
-        result = run_simulation(parameters)
+        result, vaccination_time = run_simulation(parameters)
         save_results(result, parameters, foldername, filename)
 
 # loop over both lockdown times and vaccination times
