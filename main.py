@@ -125,8 +125,8 @@ def run_simulation(parameters):
     global_steps = 0
     total_steps = simulation_days * day_steps 
     
-    print_progress = False
-    print_data = True
+    print_progress = True
+    print_data = False
     print_interval = 50
 
 

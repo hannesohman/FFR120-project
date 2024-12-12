@@ -37,6 +37,8 @@ def save_results(result, parameters, foldername, filename):
     plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
+    if vaccination_time is not None:
+        plt.axvline(x=vaccination_time, color='black', ls="--", label="Vaccination")
     # deaths are not really showing anything for now
     # plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
 
@@ -66,10 +68,10 @@ parameters = {
     "sus_std": 0.2,
     "vaccine_mode": "risk group",
     "vaccine_factor": 0.2,
-    "vaccine_time": 1,  # fraction of infected population before vaccination
-    "fraction_weakest": 0.5,
+    "vaccine_alert": 20,  # number of infected per day before vaccination
+    "fraction_to_vaccinate": 0.5,
     "lockdown_time": 1,
-    "silent_mode": True,
+    "display_graphics": False,
 }
 
 foldername = time.strftime("%Y-%m-%d-%H.%M.%S")
@@ -78,20 +80,21 @@ repeats = 4
 
 # loop over multiple vaccination times, no lockdown
 
-vaccination_times = [0.1, 0.15, 0.2, 0.25, 0.3, 1]
+vaccine_alerts = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
 
-for vaccination_time in vaccination_times:
+for alert in vaccine_alerts:
+    print(f"vaccine_alert: {alert}")
     for i in range(repeats):
-        parameters["vaccine_time"] = vaccination_time
+        parameters["vaccine_time"] = alert
         parameters["lockdown_time"] = 1
-        filename = f"Vaccination_{vaccination_time}_{i+1}"
+        filename = f"Vaccination_{alert}_{i+1}"
 
         result, vaccination_time = run_simulation(parameters)
         save_results(result, parameters, foldername, filename)
 
 
 # loop over multiple lockdown times no vaccination
-lockdown_times = [val for val in vaccination_times if val != 1]
+lockdown_times = [val for val in vaccine_alerts if val != 1]
 
 for lockdown_time in lockdown_times:
     for i in range(repeats):
