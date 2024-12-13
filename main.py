@@ -106,29 +106,21 @@ def run_simulation(parameters):
     vaccine_factor = parameters["vaccine_factor"]
     vaccine_alert = parameters["vaccine_alert"]
     fraction_to_vaccinate = parameters["fraction_to_vaccinate"]
+    lockdown_alert = parameters["lockdown_alert"]
 
     if "display_graphics" in parameters:
         display_graphics = parameters["display_graphics"]
     else:
         display_graphics = True
 
-    if "lockdown_time" in parameters:
-        lockdown_time = parameters["lockdown_time"]
-    else:
-        # lockdown_time works just like vaccination time,
-        # is applied when a certain fraction of the population is infected
-        # so 1 means no lockdown at all.
-        lockdown_time = 1
-
     day_steps = int(1 / dt)  # steps per day (used in for-loop)
 
     global_steps = 0
-    total_steps = simulation_days * day_steps 
-    
+    total_steps = simulation_days * day_steps
+
     print_progress = True
     print_data = False
     print_interval = 50
-
 
     # adjust parameters for dt
     beta *= dt
@@ -148,6 +140,7 @@ def run_simulation(parameters):
         4  # * Förhållandet mellan upplösningen på fönstret och upplösningen på rutnätet
     )
     vaccination_time = None
+    lockdown_time = None
 
     if display_graphics:
         tk = Tk()
@@ -235,6 +228,7 @@ def run_simulation(parameters):
     D = []
 
     vaccination = False
+    lockdown = False
 
     for day in range(simulation_days):
         # step = 0
@@ -246,10 +240,14 @@ def run_simulation(parameters):
             D.append(np.size(np.where(status == 3)[0]))
 
             if step == day_steps * 2 / 5:
-                # rough lockdown implementation, possibly improve later
-                #
+                slope = calc_infected_slope(I, int(5 / dt)) / dt
+
+                if slope > lockdown_alert:
+                    lockdown = True
+                    lockdown_time = global_steps * dt
+
                 # if we haven't reached lockdown, continue in the same way.
-                if I[-1] < lockdown_time * N_indiv:
+                if not lockdown:
                     schedule = "kårhuset"  # Ska representer lunchtid
                     d = 0.70 * dt
                     location = switch_location(
@@ -259,7 +257,6 @@ def run_simulation(parameters):
                     min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
                 else:
-                    # current implementation, we'll discuss this tomorrow
                     schedule = "lecture"
                     d = 0.7 * dt
                     x, y = random_location_coords(location, location_info)
@@ -272,8 +269,7 @@ def run_simulation(parameters):
                 x, y = random_location_coords(location, location_info)
                 min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
-            
-            slope = calc_infected_slope(I, int(5/dt))/dt
+            slope = calc_infected_slope(I, int(5 / dt)) / dt
             if slope > vaccine_alert and not vaccination:
                 print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
                 # "all even" , "all random" , "risk group"
@@ -285,7 +281,7 @@ def run_simulation(parameters):
                     fraction_to_vaccinate=fraction_to_vaccinate,
                 )
                 vaccination = True
-                vaccination_time = global_steps*dt
+                vaccination_time = global_steps * dt
 
             nx, ny = move(x, y, d, status)  # Flytta inddividerna
 
@@ -327,14 +323,15 @@ def run_simulation(parameters):
             if print_data:
                 if global_steps % int(total_steps / print_interval) == 0:
                     percent_done = round(100 * global_steps / total_steps, 2)
-                    print(f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} | Slope: {slope:.3f}")
-                
+                    print(
+                        f"Day: {day} | Step: {step} | S:{S[-1]} | I:{I[-1]} | R:{R[-1]} | D:{D[-1]} | Slope: {slope:.3f}"
+                    )
 
             if print_progress:
                 if global_steps % int(total_steps / print_interval) == 0:
                     percent_done = round(100 * global_steps / total_steps, 2)
                     print(f"simulating... {percent_done}", end="\r")
-            
+
             global_steps += 1
 
             if I[-1] == 0:  # or step == 600:
@@ -345,7 +342,6 @@ def run_simulation(parameters):
             break
             # step += 1
 
-
     if display_graphics:
         tk.update_idletasks()
         tk.update()
@@ -354,9 +350,8 @@ def run_simulation(parameters):
     I = np.array(I)
     R = np.array(R)
     D = np.array(D)
-    
 
-    return np.array([S, I, R, D]), vaccination_time
+    return np.array([S, I, R, D]), vaccination_time, lockdown_time
 
 
 if __name__ == "__main__":
@@ -380,7 +375,6 @@ if __name__ == "__main__":
 
     result, vaccination_time = run_simulation(parameters)
 
-
     S = result[0]
     I = result[1]
     R = result[2]
@@ -391,7 +385,7 @@ if __name__ == "__main__":
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
     if vaccination_time is not None:
-        plt.axvline(x=vaccination_time, color='black', ls="--")
+        plt.axvline(x=vaccination_time, color="black", ls="--")
     plt.legend()
     plt.xlabel("Time (days)")
     plt.ylabel("Individuals")

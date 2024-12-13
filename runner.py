@@ -38,7 +38,9 @@ def save_results(result, parameters, foldername, filename):
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
     if vaccination_time is not None:
-        plt.axvline(x=vaccination_time, color='black', ls="--", label="Vaccination")
+        plt.axvline(x=vaccination_time, color="black", ls="--", label="Vaccination")
+    if lockdown_time is not None:
+        plt.axvline(x=lockdown_time, color="black", ls="--", label="Lockdown")
     # deaths are not really showing anything for now
     # plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
 
@@ -46,7 +48,7 @@ def save_results(result, parameters, foldername, filename):
     plt.xlabel("Time (days)")
     plt.ylabel("Individuals")
 
-    title = f'Lockdown at {parameters["lockdown_time"]}, vaccination at {parameters["vaccine_time"]}'
+    title = f'Lockdown at slope {parameters["lockdown_alert"]}, vaccination at slope {parameters["vaccine_alert"]}'
     plt.title(title)
 
     plt.savefig(f"./results/{foldername}/{filename}_plot.png")
@@ -71,6 +73,7 @@ parameters = {
     "vaccine_alert": 20,  # number of infected per day before vaccination
     "fraction_to_vaccinate": 0.5,
     "lockdown_time": 1,
+    "lockdown_alert": 20,
     "display_graphics": False,
 }
 
@@ -79,30 +82,36 @@ repeats = 4
 
 
 # loop over multiple vaccination times, no lockdown
+min_alert = 0
+max_alert = 60
+num_steps = 30
 
-vaccine_alerts = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+vaccine_alerts = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+vaccine_alerts = np.linspace(min_alert, max_alert, num=num_steps)
+vaccine_alerts = np.round(vaccine_alerts, 0)
+print(vaccine_alerts)
 
 for alert in vaccine_alerts:
     print(f"vaccine_alert: {alert}")
     for i in range(repeats):
-        parameters["vaccine_time"] = alert
-        parameters["lockdown_time"] = 1
+        parameters["vaccine_alert"] = alert
+        parameters["lockdown_alert"] = 10000
         filename = f"Vaccination_{alert}_{i+1}"
 
-        result, vaccination_time = run_simulation(parameters)
+        result, vaccination_time, lockdown_time = run_simulation(parameters)
         save_results(result, parameters, foldername, filename)
 
 
-# loop over multiple lockdown times no vaccination
-lockdown_times = [val for val in vaccine_alerts if val != 1]
+# loop over multiple lockdown times, no vaccination
+lockdown_alerts = vaccine_alerts
 
-for lockdown_time in lockdown_times:
+for lockdown_alert in lockdown_alerts:
     for i in range(repeats):
-        parameters["lockdown_time"] = lockdown_time
-        parameters["vaccine_time"] = 1
-        filename = f"Lockdown_{lockdown_time}_{i+1}"
+        parameters["lockdown_alert"] = lockdown_alert
+        parameters["vaccine_alert"] = 10000
+        filename = f"Lockdown_{lockdown_alert}_{i+1}"
 
-        result, vaccination_time = run_simulation(parameters)
+        result, vaccination_time, lockdown_time = run_simulation(parameters)
         save_results(result, parameters, foldername, filename)
 
 # loop over both lockdown times and vaccination times
