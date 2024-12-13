@@ -1,23 +1,28 @@
-from main import run_simulation
+from main_modified import run_simulation
 import numpy as np
 import matplotlib.pyplot as plt
 import json
 import time
 import os
-import heapq
 
 
-def save_mean_results(result, parameters, foldername, filename, vaccination_time):
+def save_mean_results(result, parameters, foldername, filename, vaccination_time, lockdown_time):
     """
     Saves parameters and results to filename, filename_parameters in a given folder
     Results has to be a ndarray of shape (4, N_indivd)
     """
+
+    parameters["vaccination_x"] = vaccination_time        
+    parameters["lockdown_x"] = lockdown_time
+
     # create directory
     newpath = f"./results/{foldername}"
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
-    
+    with open(f"./results/{foldername}/{filename}_param.json", "w+") as file:
+        json.dump(parameters, file)
+
     # save results
     np.savetxt(f"./results/{foldername}/{filename}_result.txt", result)
 
@@ -43,31 +48,14 @@ def save_mean_results(result, parameters, foldername, filename, vaccination_time
     
     if vaccination_time != None:
         plt.axvline(x = vaccination_time, color = 'g', linestyle = '--', label = 'Time of Vaccination')
-        parameters["vaccination_x"] = vaccination_time
-
-    heap = I.tolist()
-    heapq.heapify(heap)
-    lockdown_time = None
-
-    for i, val in enumerate(heap):
-        if val > parameters["lockdown_time"]*parameters["N_indiv"]:
-            lockdown_time = i*parameters["dt"]
-            break
-    else:
-        lockdown_time = None
 
 
     if lockdown_time != None:
         plt.axvline(x = lockdown_time, color = 'b', linestyle = "--", label = 'Time of Lockdown')
-        parameters["lockdown_x"] = lockdown_time
-
-    # save parameters
-    with open(f"./results/{foldername}/{filename}_param.json", "w+") as file:
-        json.dump(parameters, file)
 
     
 
-    title = f'Lockdown at {parameters["lockdown_time"]}, vaccination at {parameters["vaccine_alert"]}'
+    title = f'Lockdown at {parameters["lockdown_alert"]}, vaccination at {parameters["vaccine_alert"]}'
     plt.title(title)
 
     plt.savefig(f"./results/{foldername}/{filename}_plot.png")
@@ -92,42 +80,52 @@ parameters = {
     "vaccine_factor": 0.2,
     "vaccine_alert": 20,  # fraction of infected population before vaccination
     "fraction_to_vaccinate": 0.5,
-    "lockdown_time": 1,
+    "lockdown_alert": 20,
     "vaccination_x": 0,
     "lockdown_x": 0,
     "display_graphics": False,
 }
 
 foldername = time.strftime("%Y-%m-%d-%H.%M.%S")
-repeats = 10
+repeats = 1
 
 
 
-vaccination_times = [5, 10, 20, 40, 60]
-lockdown_times = [0.1, 0.2, 0.3, 1]
+vaccine_alerts = [5, 10, 20, 40, 60]
+lockdown_alerts = [val for val in vaccine_alerts if val != 1]
 
-for vaccination_time in vaccination_times:
-    parameters["vaccine_alert"] = vaccination_time
-    parameters["lockdown_time"] = 1
+for vaccine_alert in vaccine_alerts:
+    parameters["vaccine_alert"] = vaccine_alert
+    parameters["lockdown_alert"] = 10000
     results_list = []
+    vaccination_time_list = []
+
     for i in range(repeats):
-        result, vaccination_time = run_simulation(parameters)
+        result, vaccination_time , _ = run_simulation(parameters)
         results_list.append(result)
+        vaccination_time_list.append(vaccination_time)
     results_list = np.array(results_list)
     result = np.mean(results_list, axis=0)
+    vaccination_time_list = np.array(vaccination_time_list)
+    vaccination_time = np.mean(vaccination_time_list,axis=0)
 
     filename = f"Vaccination_{vaccination_time}_mean"
-    save_mean_results(result, parameters, foldername, filename, vaccination_time)
+    save_mean_results(result, parameters, foldername, filename, vaccination_time, _)
 
-for lockdown_time in lockdown_times:
-    parameters["lockdown_time"] = lockdown_time
+for lockdown_alert in lockdown_alerts:
+    parameters["lockdown_alert"] = lockdown_alert
     parameters["vaccine_alert"] = 10000
     results_list = []
+    lockdown_time_list = []
+
     for i in range(repeats):
-        result, vaccination_time = run_simulation(parameters)
+        result, _, lockdown_time = run_simulation(parameters)
         results_list.append(result)
+        lockdown_time_list.append
     results_list = np.array(results_list)
     result = np.mean(results_list, axis=0)
+    lockdown_time_list = np.array(lockdown_time_list)
+    lockdown_time = np.mean(lockdown_time_list)
 
     filename = f"Lockdown_{lockdown_time}_mean"
-    save_mean_results(result, parameters, foldername, filename, vaccination_time)
+    save_mean_results(result, parameters, foldername, filename, _, lockdown_time)
