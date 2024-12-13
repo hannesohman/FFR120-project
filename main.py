@@ -88,7 +88,9 @@ def run_simulation(parameters):
     sus_std - suseptibility standard deviation
     vaccine_mode - how the vaccination is performed
     vaccine_factor - factor by which the vaccination decreases sus
-    fraction_to_vaccinate - ???
+    slope_days - number of days over wich the mean slope is calculated, this number of days must have passed before a mean can be calcluated
+    vaccine_alert - the mean number of people that have to get infected per day before a vaccine is issued
+    fraction_to_vaccinate - the fraction of the population that will recieve a vaccine
 
     display_graphics - if true, run without showing simulation
     """
@@ -104,6 +106,7 @@ def run_simulation(parameters):
     sus_std = parameters["sus_std"]
     vaccine_mode = parameters["vaccine_mode"]
     vaccine_factor = parameters["vaccine_factor"]
+    slope_days = parameters["slope_days"]
     vaccine_alert = parameters["vaccine_alert"]
     fraction_to_vaccinate = parameters["fraction_to_vaccinate"]
 
@@ -111,6 +114,12 @@ def run_simulation(parameters):
         display_graphics = parameters["display_graphics"]
     else:
         display_graphics = True
+
+    if "print_data" in parameters:
+        print_data = parameters["print_data"]
+    else:
+        print_data = False
+        
 
     if "lockdown_time" in parameters:
         lockdown_time = parameters["lockdown_time"]
@@ -126,7 +135,6 @@ def run_simulation(parameters):
     total_steps = simulation_days * day_steps 
     
     print_progress = True
-    print_data = False
     print_interval = 50
 
 
@@ -200,7 +208,7 @@ def run_simulation(parameters):
     susceptibility = np.random.normal(sus_mean, sus_std, (N_indiv, 1))
     # no one has a lower suseptibility than 1
     # higher suseptibility -> higher risk of being infected
-    susceptibility[susceptibility < 1] = 1
+    # susceptibility[susceptibility < 1] = 1
 
     if display_graphics:
         individuals_dots = []
@@ -273,9 +281,9 @@ def run_simulation(parameters):
                 min_x, min_y, max_x, max_y = get_min_max(location, location_info)
 
             
-            slope = calc_infected_slope(I, int(5/dt))/dt
+            slope = calc_infected_slope(I, int(slope_days/dt))/dt
             if slope > vaccine_alert and not vaccination:
-                print(f"Day: {day} Step: {step} ({day*day_steps + step}) | VACCINE!!!")
+                print(f"Day: {day} Step: {step} ({day*day_steps + step}) Slope: {slope} I:{I[-1]} | VACCINE!!!")
                 # "all even" , "all random" , "risk group"
                 susceptibility = vaccinate(
                     susceptibility,
@@ -359,23 +367,36 @@ def run_simulation(parameters):
     return np.array([S, I, R, D]), vaccination_time
 
 
+
+
+
+
+
+
+
 if __name__ == "__main__":
+    # beta (1/1.5)*dt, gamma (1/14)*dt, alpha (1/25)*dt ger fina plottar med vaccination vid 3 & 6
+
+    dt = 0.1
     parameters = {
-        "beta": 1 / 1.8,
-        "gamma": 1 / 14,
-        "theta": 0.0001,
-        "alpha": 1 / 25,
-        "N_indiv": 2000,
-        "simulation_days": 300,
-        "dt": 0.1,
-        "I0": 2,
+        "beta": (1 / 0.12)*dt,       # Probability of becoming infected
+        "gamma": (1 / 10)*dt,       # Probability of becoming recovered
+        "theta": (0.0001)*dt,       # Probability of dying
+        "alpha": (1 / 30)*dt,       # Probability of becoming susceptible again
+        "N_indiv": 1000,
+        "simulation_days": 900,
+        "dt": dt,
+        "I0": 10,  # too low -> risk of disease dying out
         "sus_mean": 1,
         "sus_std": 0.2,
         "vaccine_mode": "risk group",
-        "vaccine_factor": 0.2,
-        "vaccine_alert": 20,
-        "fraction_to_vaccinate": 0.5,
+        "vaccine_factor": 0,
+        "slope_days": 10,
+        "vaccine_alert": 2,        # number of infected per day before vaccination
+        "fraction_to_vaccinate": 0.999999,
+        "lockdown_time": 1,
         "display_graphics": False,
+        "print_data": True,
     }
 
     result, vaccination_time = run_simulation(parameters)
@@ -385,8 +406,9 @@ if __name__ == "__main__":
     I = result[1]
     R = result[2]
     D = result[3]
+    print(I[700:1040])
     days = np.linspace(0, parameters["simulation_days"], num=S.size)
-    plt.figure("Test Run")
+    plt.figure(f"Test Run_{parameters['vaccine_alert']}")
     plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
