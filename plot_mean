@@ -1,0 +1,131 @@
+from main_modified import run_simulation
+import numpy as np
+import matplotlib.pyplot as plt
+import json
+import time
+import os
+
+
+def save_mean_results(result, parameters, foldername, filename, vaccination_time, lockdown_time):
+    """
+    Saves parameters and results to filename, filename_parameters in a given folder
+    Results has to be a ndarray of shape (4, N_indivd)
+    """
+
+    parameters["vaccination_x"] = vaccination_time        
+    parameters["lockdown_x"] = lockdown_time
+
+    # create directory
+    newpath = f"./results/{foldername}"
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+    with open(f"./results/{foldername}/{filename}_param.json", "w+") as file:
+        json.dump(parameters, file)
+
+    # save results
+    np.savetxt(f"./results/{foldername}/{filename}_result.txt", result)
+
+    # save a plot of results (not for final poster, only temporary use)
+    S = result[0]
+    I = result[1]
+    R = result[2]
+    D = result[3]
+    tot = parameters["N_indiv"]
+    days = np.linspace(0, parameters["simulation_days"], num=S.size)
+    plt.plot(days, S/tot, c=[0.2, 0.4, 0.7], label="S")
+    plt.plot(days, I/tot, c=[0.7, 0.3, 0.2], label="I")
+    plt.plot(days, R/tot, c=[0.3, 0.7, 0.3], label="R")
+    # deaths are not really showing anything for now
+    # plt.plot(days, D, c=[0.6, 0.6, 0.6], label="D")
+    plt.xlim(0, parameters["simulation_days"])
+    plt.ylim(0, 1)
+    plt.gca().set_aspect('auto')
+
+    plt.legend()
+    plt.xlabel("Time (days)")
+    plt.ylabel("Individuals")
+    
+    if vaccination_time != None:
+        plt.axvline(x = vaccination_time, color = 'g', linestyle = '--', label = 'Time of Vaccination')
+
+
+    if lockdown_time != None:
+        plt.axvline(x = lockdown_time, color = 'b', linestyle = "--", label = 'Time of Lockdown')
+
+    
+
+    title = f'Lockdown at {parameters["lockdown_alert"]}, vaccination at {parameters["vaccine_alert"]}'
+    plt.title(title)
+
+    plt.savefig(f"./results/{foldername}/{filename}_plot.png")
+    print(f"Saved ./results/{foldername}/{filename}_plot.png")
+    plt.clf()
+    plt.close()
+
+dt = 0.1
+
+parameters = {
+    "beta": 1 / 1.5*dt,
+    "gamma": 1 / 14*dt,
+    "theta": 0.0001*dt,
+    "alpha": 1 / 25*dt,
+    "N_indiv": 2000,
+    "simulation_days": 900,
+    "dt": 0.1,
+    "I0": 10,  # too low -> risk of disease dying out
+    "sus_mean": 1,
+    "sus_std": 0.2,
+    "vaccine_mode": "risk group",
+    "vaccine_factor": 0.2,
+    "vaccine_alert": 20,  # fraction of infected population before vaccination
+    "fraction_to_vaccinate": 0.5,
+    "lockdown_alert": 20,
+    "vaccination_x": 0,
+    "lockdown_x": 0,
+    "display_graphics": False,
+}
+
+foldername = time.strftime("%Y-%m-%d-%H.%M.%S")
+repeats = 1
+
+
+
+vaccine_alerts = [5, 10, 20, 40, 60]
+lockdown_alerts = [val for val in vaccine_alerts if val != 1]
+
+for vaccine_alert in vaccine_alerts:
+    parameters["vaccine_alert"] = vaccine_alert
+    parameters["lockdown_alert"] = 10000
+    results_list = []
+    vaccination_time_list = []
+
+    for i in range(repeats):
+        result, vaccination_time , _ = run_simulation(parameters)
+        results_list.append(result)
+        vaccination_time_list.append(vaccination_time)
+    results_list = np.array(results_list)
+    result = np.mean(results_list, axis=0)
+    vaccination_time_list = np.array(vaccination_time_list)
+    vaccination_time = np.mean(vaccination_time_list,axis=0)
+
+    filename = f"Vaccination_{vaccination_time}_mean"
+    save_mean_results(result, parameters, foldername, filename, vaccination_time, _)
+
+for lockdown_alert in lockdown_alerts:
+    parameters["lockdown_alert"] = lockdown_alert
+    parameters["vaccine_alert"] = 10000
+    results_list = []
+    lockdown_time_list = []
+
+    for i in range(repeats):
+        result, _, lockdown_time = run_simulation(parameters)
+        results_list.append(result)
+        lockdown_time_list.append
+    results_list = np.array(results_list)
+    result = np.mean(results_list, axis=0)
+    lockdown_time_list = np.array(lockdown_time_list)
+    lockdown_time = np.mean(lockdown_time_list)
+
+    filename = f"Lockdown_{lockdown_time}_mean"
+    save_mean_results(result, parameters, foldername, filename, _, lockdown_time)
