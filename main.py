@@ -243,8 +243,9 @@ def run_simulation(parameters):
                 slope = calc_infected_slope(I, int(5 / dt)) / dt
 
                 if slope > lockdown_alert:
+                    if not lockdown:
+                        lockdown_time = global_steps * dt
                     lockdown = True
-                    lockdown_time = global_steps * dt
 
                 # if we haven't reached lockdown, continue in the same way.
                 if not lockdown:

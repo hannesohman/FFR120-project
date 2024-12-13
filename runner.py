@@ -86,10 +86,8 @@ min_alert = 0
 max_alert = 60
 num_steps = 30
 
-vaccine_alerts = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 vaccine_alerts = np.linspace(min_alert, max_alert, num=num_steps)
 vaccine_alerts = np.round(vaccine_alerts, 0)
-print(vaccine_alerts)
 
 for alert in vaccine_alerts:
     print(f"vaccine_alert: {alert}")
