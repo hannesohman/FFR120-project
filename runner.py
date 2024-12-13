@@ -29,11 +29,12 @@ def save_results(result, parameters, foldername, filename):
     np.savetxt(f"./results/{foldername}/{filename}_result.txt", result)
 
     # save a plot of results (not for final poster, only temporary use)
+    dt = parameters["dt"]
     S = result[0]
     I = result[1]
     R = result[2]
     D = result[3]
-    days = np.linspace(0, parameters["simulation_days"], num=S.size)
+    days = np.linspace(0, S.size*dt, num=S.size)
     plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
@@ -56,20 +57,22 @@ def save_results(result, parameters, foldername, filename):
     plt.clf()
     plt.close()
 
+dt = 0.1
 
 parameters = {
-    "beta": 1 / 1.5,
-    "gamma": 1 / 14,
-    "theta": 0.0001,
-    "alpha": 1 / 25,
+    "beta": (1 / 0.15)*dt,      # Probability of becoming infected
+    "gamma": (1 / 1.4)*dt,      # Probability of becoming recovered
+    "theta": (0.001)*dt,       # Probability of dying
+    "alpha": (1 / 2.5)*dt,       # Probability of becoming susceptible again
     "N_indiv": 2000,
     "simulation_days": 300,
-    "dt": 0.1,
+    "dt": dt,
     "I0": 10,  # too low -> risk of disease dying out
     "sus_mean": 1,
     "sus_std": 0.2,
     "vaccine_mode": "risk group",
     "vaccine_factor": 0.2,
+    "slope_days": 10,
     "vaccine_alert": 20,  # number of infected per day before vaccination
     "fraction_to_vaccinate": 0.5,
     "lockdown_time": 1,

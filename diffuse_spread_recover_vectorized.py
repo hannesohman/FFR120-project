@@ -128,7 +128,7 @@ def reset(status, alpha, N_indiv):
 
 
 def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_to_vaccinate=0.5):
-    print(vaccine_factor, fraction_to_vaccinate, mode)
+    # print(vaccine_factor, fraction_to_vaccinate, mode)
 
     if mode == "all even":
         susceptibility *= vaccine_factor
@@ -143,10 +143,10 @@ def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, frac
         index_cut = int(len(sorted_suscep) * fraction_to_vaccinate)
         # print(index_cut)
         weak_limit = sorted_suscep[index_cut]
-        print(weak_limit)
-        print(f"mean suseptibility before: {np.mean(susceptibility)}")
+        # print(weak_limit)
+        # print(f"mean suseptibility before: {np.mean(susceptibility)}")
         susceptibility[susceptibility >= weak_limit] *= vaccine_factor
-        print(f"mean suseptibility after: {np.mean(susceptibility)}")
+        # print(f"mean suseptibility after: {np.mean(susceptibility)}")
     return susceptibility
 
 

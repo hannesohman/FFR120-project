@@ -53,9 +53,11 @@ plotted_normal = False
 
 threshold = 0.1
 for parameter, result in zip(parameters, results):
+    dt = parameter["dt"]
+
     if parameter["vaccine_time"] == threshold and parameter["lockdown_time"] == 1:
         S, I, R, D = result
-        days = np.linspace(0, parameter["simulation_days"], num=I.size)
+        days = np.linspace(0, I.size*dt, num=I.size)
 
         label = None if plotted_vaccine else f"Vaccination at {threshold}"
         plt.plot(days, I, label=label, color="orange")
@@ -63,7 +65,7 @@ for parameter, result in zip(parameters, results):
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == threshold:
         S, I, R, D = result
-        days = np.linspace(0, parameter["simulation_days"], num=I.size)
+        days = np.linspace(0, I.size*dt, num=I.size)
 
         label = None if plotted_lockdown else f"Lockdown at {threshold}"
         plt.plot(days, I, label=label, color="blue")
@@ -71,7 +73,7 @@ for parameter, result in zip(parameters, results):
 
     elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 1:
         S, I, R, D = result
-        days = np.linspace(0, parameter["simulation_days"], num=I.size)
+        days = np.linspace(0, I.size*dt, num=I.size)
 
         label = None if plotted_normal else f"No vaccination or lockdown"
         plt.plot(days, I, label=label, color="green")

@@ -136,7 +136,7 @@ def run_simulation(parameters):
     total_steps = simulation_days * day_steps
 
     print_progress = True
-    print_interval = 50
+    print_interval = 200
 
     # adjust parameters for dt
     beta *= dt
@@ -250,6 +250,7 @@ def run_simulation(parameters):
         # step = 0
 
         for step in range(day_steps):
+            # print(global_steps, np.size(np.where(status == 1)[0]))
             S.append(np.size(np.where(status == 0)[0]))
             I.append(np.size(np.where(status == 1)[0]))
             R.append(np.size(np.where(status == 2)[0]))
@@ -289,7 +290,7 @@ def run_simulation(parameters):
             
             slope = calc_infected_slope(I, int(slope_days/dt))/dt
             if slope > vaccine_alert and not vaccination:
-                print(f"Day: {day} Step: {step} ({day*day_steps + step}) Slope: {slope} I:{I[-1]} | VACCINE!!!")
+                print(f"Day: {day} Step: {step} ({global_steps}) Slope: {slope} I:{I[-1]} | VACCINE!!!")
                 # "all even" , "all random" , "risk group"
                 susceptibility = vaccinate(
                     susceptibility,
@@ -300,6 +301,8 @@ def run_simulation(parameters):
                 )
                 vaccination = True
                 vaccination_time = global_steps * dt
+                # print(vaccination_time)
+                # time.sleep(10000)
 
             nx, ny = move(x, y, d, status)  # Flytta inddividerna
 
@@ -384,34 +387,36 @@ if __name__ == "__main__":
 
     dt = 0.1
     parameters = {
-        "beta": (1 / 0.12)*dt,       # Probability of becoming infected
-        "gamma": (1 / 10)*dt,       # Probability of becoming recovered
+        "beta": (1 / 0.05)*dt,      # Probability of becoming infected
+        "gamma": (1 / 4)*dt,       # Probability of becoming recovered
         "theta": (0.0001)*dt,       # Probability of dying
         "alpha": (1 / 30)*dt,       # Probability of becoming susceptible again
         "N_indiv": 1000,
-        "simulation_days": 900,
+        "simulation_days": 500, # 400 - 800
         "dt": dt,
         "I0": 10,  # too low -> risk of disease dying out
         "sus_mean": 1,
         "sus_std": 0.2,
         "vaccine_mode": "risk group",
         "vaccine_factor": 0,
-        "slope_days": 10,
-        "vaccine_alert": 2,        # number of infected per day before vaccination
+        "slope_days": 30,
+        "vaccine_alert": 10,        # number of infected per day before vaccination
         "fraction_to_vaccinate": 0.999999,
         "lockdown_time": 1,
+        "lockdown_alert": 20,
         "display_graphics": False,
         "print_data": True,
     }
 
-    result, vaccination_time = run_simulation(parameters)
+    result, vaccination_time, lockdown_time = run_simulation(parameters)
+
+    
 
     S = result[0]
     I = result[1]
     R = result[2]
     D = result[3]
-    print(I[700:1040])
-    days = np.linspace(0, parameters["simulation_days"], num=S.size)
+    days = np.linspace(0, S.size*dt, num=S.size)
     plt.figure(f"Test Run_{parameters['vaccine_alert']}")
     plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
