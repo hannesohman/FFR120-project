@@ -103,7 +103,7 @@ plt.clf()
 ##########################################################################################
 
 # import data
-datapath = "2024-12-14-11.01.36"
+datapath = "2024-12-14-11.48.52"
 parameters, results = plotter.load_data(datapath)
 
 fig, ax = plt.subplots()
@@ -114,8 +114,9 @@ for parameter, result in zip(parameters, results):
     max_infections = np.max(I)
     alert_level = parameter["vaccine_alert"]
     vaccine_mode = parameter["vaccine_mode"]
-    print(f"{alert_level}, {max_infections}")
     random_was_used = vaccine_mode == "random"
+    print(vaccine_mode)
+    print(random_was_used)
 
     color = colors[0] if random_was_used else colors[1]
     label = "Random" if random_was_used else "Risk group"
