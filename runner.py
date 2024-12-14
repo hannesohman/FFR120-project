@@ -94,28 +94,28 @@ vaccine_alerts = np.linspace(min_alert, max_alert, num=num_steps)
 vaccine_alerts = np.round(vaccine_alerts, 0)
 vaccine_alerts = vaccine_alerts[vaccine_alerts > 45]
 
-for alert in vaccine_alerts:
-    print(f"vaccine_alert: {alert}")
-    for i in range(repeats):
-        parameters["vaccine_alert"] = alert
-        parameters["lockdown_alert"] = 10000
-        filename = f"Vaccination_{alert}_{i+1}"
+# for alert in vaccine_alerts:
+#     print(f"vaccine_alert: {alert}")
+#     for i in range(repeats):
+#         parameters["vaccine_alert"] = alert
+#         parameters["lockdown_alert"] = 10000
+#         filename = f"Vaccination_{alert}_{i+1}"
 
-        result, vaccination_time, lockdown_time = run_simulation(parameters)
-        save_results(result, parameters, foldername, filename)
+#         result, vaccination_time, lockdown_time = run_simulation(parameters)
+#         save_results(result, parameters, foldername, filename)
 
 
-# multiple lockdown times, no vaccination
-lockdown_alerts = vaccine_alerts
+# # multiple lockdown times, no vaccination
+# lockdown_alerts = vaccine_alerts
 
-for lockdown_alert in lockdown_alerts:
-    for i in range(repeats):
-        parameters["lockdown_alert"] = lockdown_alert
-        parameters["vaccine_alert"] = 10000
-        filename = f"Lockdown_{lockdown_alert}_{i+1}"
+# for lockdown_alert in lockdown_alerts:
+#     for i in range(repeats):
+#         parameters["lockdown_alert"] = lockdown_alert
+#         parameters["vaccine_alert"] = 10000
+#         filename = f"Lockdown_{lockdown_alert}_{i+1}"
 
-        result, vaccination_time, lockdown_time = run_simulation(parameters)
-        save_results(result, parameters, foldername, filename)
+#         result, vaccination_time, lockdown_time = run_simulation(parameters)
+#         save_results(result, parameters, foldername, filename)
 
 # neither vaccination or lockdown
 
@@ -149,11 +149,10 @@ for lockdown_alert in lockdown_alerts:
 #
 min_alert = 0
 max_alert = 60
-num_steps = 10
+num_steps = 30
 
 vaccine_alerts = np.linspace(min_alert, max_alert, num=num_steps)
 vaccine_alerts = np.round(vaccine_alerts, 0)
-vaccine_alerts = vaccine_alerts[vaccine_alerts > 45]
 vaccine_modes = ["random", "risk_group"]
 
 for vaccine_mode in vaccine_modes:
@@ -163,7 +162,7 @@ for vaccine_mode in vaccine_modes:
         for i in range(repeats):
             parameters["vaccine_alert"] = alert
             parameters["lockdown_alert"] = 10000
-            filename = f"Vaccination_{alert}_{i+1}"
+            filename = f"Vaccination_{vaccine_mode}_{alert}_{i+1}"
 
             result, vaccination_time, lockdown_time = run_simulation(parameters)
             save_results(result, parameters, foldername, filename)
