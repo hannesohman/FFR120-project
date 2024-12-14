@@ -127,13 +127,19 @@ def reset(status, alpha, N_indiv):
     return status
 
 
-def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, fraction_to_vaccinate=0.5):
+def vaccinate(
+    susceptibility,
+    N_indiv,
+    mode="all even",
+    vaccine_factor=0.2,
+    fraction_to_vaccinate=0.5,
+):
     # print(vaccine_factor, fraction_to_vaccinate, mode)
 
     if mode == "all even":
         susceptibility *= vaccine_factor
     elif mode == "random":
-        index = np.random.permutation(N_indiv)[:int(fraction_to_vaccinate*N_indiv)]
+        index = np.random.permutation(N_indiv)[: int(fraction_to_vaccinate * N_indiv)]
         susceptibility[index] *= vaccine_factor
 
     elif mode == "risk group":
@@ -147,6 +153,8 @@ def vaccinate(susceptibility, N_indiv, mode="all even", vaccine_factor=0.2, frac
         # print(f"mean suseptibility before: {np.mean(susceptibility)}")
         susceptibility[susceptibility >= weak_limit] *= vaccine_factor
         # print(f"mean suseptibility after: {np.mean(susceptibility)}")
+    else:
+        print(f"Not a valid mode: {mode}")
     return susceptibility
 
 
