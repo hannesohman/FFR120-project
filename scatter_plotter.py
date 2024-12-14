@@ -160,7 +160,7 @@ ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 # add legend (outside plot)
 ax.legend(framealpha=0, bbox_to_anchor=(1, 0.5))
 
-ax.set_title("Highest number of infections vs \nwhen effort was introduced")
+ax.set_title("Highest number of infections vs \nvaccination strategy")
 ax.set_xlabel("New infections per day")
 ax.set_ylabel("Highest number of infected individuals")
 
