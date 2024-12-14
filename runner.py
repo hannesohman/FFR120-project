@@ -34,7 +34,7 @@ def save_results(result, parameters, foldername, filename):
     I = result[1]
     R = result[2]
     D = result[3]
-    days = np.linspace(0, S.size*dt, num=S.size)
+    days = np.linspace(0, S.size * dt, num=S.size)
     plt.plot(days, S, c=[0.2, 0.4, 0.7], label="S")
     plt.plot(days, I, c=[0.7, 0.3, 0.2], label="I")
     plt.plot(days, R, c=[0.3, 0.7, 0.3], label="R")
@@ -57,13 +57,14 @@ def save_results(result, parameters, foldername, filename):
     plt.clf()
     plt.close()
 
+
 dt = 0.1
 
 parameters = {
-    "beta": (1 / 0.15)*dt,      # Probability of becoming infected
-    "gamma": (1 / 1.4)*dt,      # Probability of becoming recovered
-    "theta": (0.001)*dt,       # Probability of dying
-    "alpha": (1 / 2.5)*dt,       # Probability of becoming susceptible again
+    "beta": (1 / 0.15) * dt,  # Probability of becoming infected
+    "gamma": (1 / 1.4) * dt,  # Probability of becoming recovered
+    "theta": (0.001) * dt,  # Probability of dying
+    "alpha": (1 / 2.5) * dt,  # Probability of becoming susceptible again
     "N_indiv": 2000,
     "simulation_days": 300,
     "dt": dt,
@@ -84,13 +85,14 @@ foldername = time.strftime("%Y-%m-%d-%H.%M.%S")
 repeats = 4
 
 
-# loop over multiple vaccination times, no lockdown
+# multiple vaccination times, no lockdown
 min_alert = 0
 max_alert = 60
 num_steps = 30
 
 vaccine_alerts = np.linspace(min_alert, max_alert, num=num_steps)
 vaccine_alerts = np.round(vaccine_alerts, 0)
+vaccine_alerts = vaccine_alerts[vaccine_alerts > 45]
 
 for alert in vaccine_alerts:
     print(f"vaccine_alert: {alert}")
@@ -103,7 +105,7 @@ for alert in vaccine_alerts:
         save_results(result, parameters, foldername, filename)
 
 
-# loop over multiple lockdown times, no vaccination
+# multiple lockdown times, no vaccination
 lockdown_alerts = vaccine_alerts
 
 for lockdown_alert in lockdown_alerts:
@@ -115,7 +117,17 @@ for lockdown_alert in lockdown_alerts:
         result, vaccination_time, lockdown_time = run_simulation(parameters)
         save_results(result, parameters, foldername, filename)
 
-# loop over both lockdown times and vaccination times
+# neither vaccination or lockdown
+
+# for i in range(10):
+#     parameters["lockdown_alert"] = 10000
+#     parameters["vaccine_alert"] = 10000
+#     filename = f"no_vaccine_no_lockdown_{i+1}"
+
+#     result, vaccination_time, lockdown_time = run_simulation(parameters)
+#     save_results(result, parameters, foldername, filename)
+
+# both lockdown times and vaccination times
 
 # runs = 4
 

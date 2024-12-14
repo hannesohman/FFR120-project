@@ -42,46 +42,59 @@ def load_data(foldername):
 
     return parameters, results
 
+if __name__ == "__main__":
+    parameters, results = load_data("2024-12-13-16.30.11")
 
-parameters, results = load_data("2024-12-10-11.26.09")
+    # create a plot of infected individuals depending on when vaccination or lockdown was introduced
+    plotted_vaccine = False
 
-# create a plot of infected individuals depending on when vaccination or lockdown was introduced
-plotted_vaccine = False
+    plotted_lockdown = False
+    plotted_normal = False
 
-plotted_lockdown = False
-plotted_normal = False
+    alert_level = 10
+    no_alert_level_value = 100
 
-threshold = 0.1
-for parameter, result in zip(parameters, results):
-    dt = parameter["dt"]
+    for parameter, result in zip(parameters, results):
+        dt = parameter["dt"]
 
-    if parameter["vaccine_time"] == threshold and parameter["lockdown_time"] == 1:
-        S, I, R, D = result
-        days = np.linspace(0, I.size*dt, num=I.size)
+        if (
+            parameter["vaccine_alert"] == alert_level
+            and parameter["lockdown_alert"] >= no_alert_level_value
+        ):
+            S, I, R, D = result
+            days = np.linspace(0, I.size * dt, num=I.size)
 
-        label = None if plotted_vaccine else f"Vaccination at {threshold}"
-        plt.plot(days, I, label=label, color="orange")
-        plotted_vaccine = True
+            label = (
+                None if plotted_vaccine else f"Vaccination at {alert_level} new infections"
+            )
+            plt.plot(days, I, label=label, color="orange")
+            plotted_vaccine = True
 
-    elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == threshold:
-        S, I, R, D = result
-        days = np.linspace(0, I.size*dt, num=I.size)
+        elif (
+            parameter["vaccine_alert"] >= no_alert_level_value
+            and parameter["lockdown_alert"] == alert_level
+        ):
+            S, I, R, D = result
+            days = np.linspace(0, I.size * dt, num=I.size)
 
-        label = None if plotted_lockdown else f"Lockdown at {threshold}"
-        plt.plot(days, I, label=label, color="blue")
-        plotted_lockdown = True
+            label = None if plotted_lockdown else f"Lockdown at {alert_level}"
+            plt.plot(days, I, label=label, color="blue")
+            plotted_lockdown = True
 
-    elif parameter["vaccine_time"] == 1 and parameter["lockdown_time"] == 1:
-        S, I, R, D = result
-        days = np.linspace(0, I.size*dt, num=I.size)
+        elif (
+            parameter["vaccine_alert"] >= no_alert_level_value
+            and parameter["lockdown_alert"] == no_alert_level_value
+        ):
+            S, I, R, D = result
+            days = np.linspace(0, I.size * dt, num=I.size)
 
-        label = None if plotted_normal else f"No vaccination or lockdown"
-        plt.plot(days, I, label=label, color="green")
-        plotted_normal = True
+            label = None if plotted_normal else f"No vaccination or lockdown"
+            plt.plot(days, I, label=label, color="green")
+            plotted_normal = True
 
-plt.legend()
-plt.xlabel("Time (days)")
-plt.ylabel("Infected individuals")
-plt.title("Infected individuals")
+    plt.legend()
+    plt.xlabel("Time (days)")
+    plt.ylabel("Infected individuals")
+    plt.title("Infected individuals")
 
-plt.show()
+    plt.show()
